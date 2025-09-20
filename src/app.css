@@ -604,6 +604,44 @@ body::after {
 	color: var(--cyber-secondary) !important;
 }
 
+/* 多选状态样式 */
+.cyber-folder.selected {
+	background: linear-gradient(45deg, var(--cyber-bg-card), var(--cyber-bg-dark)) !important;
+	border-color: var(--cyber-primary) !important;
+	box-shadow: 0 0 15px rgba(0, 255, 136, 0.4) !important;
+}
+
+.cyber-folder.selected .cyber-text {
+	color: var(--cyber-primary) !important;
+}
+
+/* 多选复选框样式 */
+.multi-select-checkbox {
+	@apply w-6 h-6 bg-cyber-bg-card border border-cyber-primary rounded cursor-pointer flex items-center justify-center;
+	transition: all 0.3s ease;
+}
+
+.multi-select-checkbox:hover {
+	background: var(--cyber-bg-dark);
+	border-color: var(--cyber-accent);
+	box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.multi-select-checkbox.selected {
+	background: var(--cyber-primary);
+	border-color: var(--cyber-primary);
+	box-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+}
+
+/* 选中状态的图片透明度 */
+.image-selected {
+	opacity: 1 !important;
+}
+
+.image-unselected {
+	opacity: 0.5 !important;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
 	.cyber-grid {
@@ -618,5 +656,9 @@ body::after {
 	:deep(.el-message-box) {
 		margin: 20px !important;
 		width: calc(100% - 40px) !important;
+	}
+	
+	.multi-select-checkbox {
+		@apply w-5 h-5;
 	}
 }

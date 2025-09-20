@@ -5,6 +5,24 @@ import StatusCode, { Ok, Fail, Build, ImgItem, ImgList, ImgReq, Folder, AuthToke
 import { checkFileType, getFilePath, parseRange } from '../utils'
 import { R2ListOptions } from "@cloudflare/workers-types";
 
+// 处理文件名：替换空格为连字符，添加时间戳
+function processFileName(originalName: string, timestamp: number): string {
+    // 获取文件扩展名
+    const lastDotIndex = originalName.lastIndexOf('.')
+    const nameWithoutExt = lastDotIndex > 0 ? originalName.substring(0, lastDotIndex) : originalName
+    const extension = lastDotIndex > 0 ? originalName.substring(lastDotIndex) : ''
+    
+    // 替换空格为连字符，移除其他特殊字符
+    const cleanName = nameWithoutExt
+        .replace(/\s+/g, '-')  // 替换空格为连字符
+        .replace(/[^a-zA-Z0-9\-_]/g, '')  // 只保留字母、数字、连字符和下划线
+        .replace(/-+/g, '-')  // 合并多个连字符
+        .replace(/^-|-$/g, '')  // 移除开头和结尾的连字符
+    
+    // 添加时间戳
+    return `${cleanName}-${timestamp}${extension}`
+}
+
 const auth = async (request: Request, env: Env) => {
     const method = request.method;
     // console.log(method)
@@ -103,7 +121,10 @@ router.post('/upload', auth, async (req: Request, env: Env) => {
         }
 	const originFileName = item.name
         const time = new Date().getTime()
-        const objecPath = await getFilePath(fileType, originFileName, time)
+        
+        // 处理文件名：替换空格为连字符，添加时间戳
+        const processedFileName = processFileName(originFileName, time)
+        const objecPath = await getFilePath(fileType, processedFileName, time)
         const header = new Headers()
         header.set("content-type", fileType)
         header.set("content-length", `${item.size}`)

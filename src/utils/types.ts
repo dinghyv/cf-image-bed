@@ -21,6 +21,19 @@ export interface ImgItem {
 	webpUrl?: string
 	size: number
 	filename ?: string
+	isSelected?: boolean
+}
+
+export interface ExportOptions {
+	type: 'direct' | 'webp' | 'html' | 'markdown'
+	includeFolder: boolean
+}
+
+export interface SelectedItem {
+	type: 'image' | 'folder'
+	key: string
+	name: string
+	items?: ImgItem[]
 }
 
 export interface ImgList {
