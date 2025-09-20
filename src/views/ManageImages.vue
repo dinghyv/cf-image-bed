@@ -1,6 +1,22 @@
 <template>
-	<div class="mx-auto max-w-6xl my-4 px-4 relative">
-		<loading-overlay :loading="loading" />
+	<div class="mx-auto max-w-6xl my-4 px-4 relative"
+		 @dragover="onDragOver"
+		 @dragleave="onDragLeave"
+		 @drop="onDrop">
+		<loading-overlay :loading="loading || uploadLoading" />
+
+		<!-- 拖拽上传提示覆盖层 -->
+		<div v-if="isDragOver" class="fixed inset-0 bg-cyber-primary/20 backdrop-blur-sm z-50 flex items-center justify-center">
+			<div class="cyber-card p-8 text-center max-w-md mx-4">
+				<div class="text-6xl mb-4 text-cyber-primary">
+					<font-awesome-icon :icon="faUpload" />
+				</div>
+				<div class="cyber-text text-xl font-bold mb-2">拖拽图片到此处上传</div>
+				<div class="cyber-text-dim text-sm">
+					将图片拖拽到此区域，即可上传到 <span class="text-cyber-accent font-bold">{{ delimiter === '/' ? '根目录' : delimiter.replace('/', '') }}</span>
+				</div>
+			</div>
+		</div>
 
 		<!-- 页面标题和控制区域 -->
 		<div class="cyber-card p-6 mb-6">
@@ -117,21 +133,26 @@
 			<div class="cyber-text-dim">
 				<font-awesome-icon :icon="faFolder" class="text-6xl mb-4 text-cyber-primary opacity-50" />
 				<div class="text-lg mb-2">暂无图片</div>
-				<div class="text-sm">当前文件夹为空，请上传图片或切换到其他文件夹</div>
+				<div class="text-sm mb-4">当前文件夹为空，请上传图片或切换到其他文件夹</div>
+				<div class="text-xs cyber-text-dim">
+					<span class="inline-block px-3 py-2 bg-cyber-card border border-cyber-border rounded">
+						💡 提示：可以直接拖拽图片到此页面进行上传
+					</span>
+				</div>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { requestListImages, requestDeleteImage, createFolder, requestAllFolders, requestMoveImages } from '../utils/request'
+import { requestListImages, requestDeleteImage, createFolder, requestAllFolders, requestMoveImages, requestUploadImages } from '../utils/request'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import formatBytes from '../utils/format-bytes'
 import { computed, onMounted, ref } from 'vue'
 import type { ImgItem, ImgReq, Folder, ExportOptions, SelectedItem, MoveOptions } from '../utils/types'
 import ImageBox from '../components/ImageBox.vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
-import { faRedoAlt, faFolder, faFolderPlus, faCog, faCheckSquare, faSquare, faDownload, faTrash, faFolderOpen } from '@fortawesome/free-solid-svg-icons'
+import { faRedoAlt, faFolder, faFolderPlus, faCog, faCheckSquare, faSquare, faDownload, faTrash, faFolderOpen, faUpload } from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import copy from 'copy-to-clipboard'
 
@@ -141,6 +162,8 @@ const uploadedImages = ref<ImgItem[]>([])
 const prefixes = ref<String[]>([])
 const isMultiSelect = ref(false)
 const selectedFolders = ref<string[]>([])
+const isDragOver = ref(false)
+const uploadLoading = ref(false)
 
 const imagesTotalSize = computed(() =>
     uploadedImages.value.reduce((total, item) => total + item.size, 0)
@@ -206,6 +229,68 @@ const listImages = () => {
 		.finally(() => {
 			loading.value = false
 		})
+}
+
+// 拖拽上传相关函数
+const onDragOver = (e: DragEvent) => {
+	e.preventDefault()
+	isDragOver.value = true
+}
+
+const onDragLeave = (e: DragEvent) => {
+	e.preventDefault()
+	// 只有当拖拽离开整个容器时才设置为false
+	if (!e.currentTarget?.contains(e.relatedTarget as Node)) {
+		isDragOver.value = false
+	}
+}
+
+const onDrop = async (e: DragEvent) => {
+	e.preventDefault()
+	isDragOver.value = false
+	
+	const files = e.dataTransfer?.files
+	if (!files || files.length === 0) {
+		return
+	}
+	
+	// 过滤出图片文件
+	const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'))
+	if (imageFiles.length === 0) {
+		ElMessage.warning('请拖拽图片文件')
+		return
+	}
+	
+	// 检查文件大小限制
+	const maxSize = 20 * 1024 * 1024 // 20MB
+	const oversizedFiles = imageFiles.filter(file => file.size > maxSize)
+	if (oversizedFiles.length > 0) {
+		ElMessage.error(`以下文件超过20MB限制: ${oversizedFiles.map(f => f.name).join(', ')}`)
+		return
+	}
+	
+	uploadLoading.value = true
+	
+	try {
+		const formData = new FormData()
+		imageFiles.forEach(file => {
+			formData.append('files', file)
+		})
+		// 上传到当前文件夹
+		formData.append('folder', delimiter.value)
+		
+		const uploadedItems = await requestUploadImages(formData)
+		
+		ElMessage.success(`🎉 成功上传 ${uploadedItems.length} 张图片到 ${delimiter.value === '/' ? '根目录' : delimiter.value.replace('/', '')}`)
+		
+		// 刷新图片列表
+		listImages()
+	} catch (error) {
+		console.error('Upload failed:', error)
+		ElMessage.error(`上传失败: ${error}`)
+	} finally {
+		uploadLoading.value = false
+	}
 }
 
 onMounted(() => {
