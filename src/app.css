@@ -457,7 +457,8 @@ body::after {
 	100% { left: 100%; }
 }
 
-/* 赛博朋克弹窗样式 */
+/* 赛博朋克弹窗样式 - 强制覆盖Element Plus默认样式 */
+.el-message-box,
 :deep(.el-message-box),
 :deep(.cyber-message-box) {
 	background: var(--cyber-bg-card) !important;
@@ -466,6 +467,18 @@ body::after {
 	box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8) !important;
 	position: relative !important;
 	overflow: hidden !important;
+	color: var(--cyber-text) !important;
+}
+
+/* 强制覆盖Element Plus的弹窗遮罩 */
+.el-overlay {
+	background-color: rgba(0, 0, 0, 0.8) !important;
+	backdrop-filter: blur(4px) !important;
+}
+
+/* 强制覆盖Element Plus的弹窗容器 */
+.el-message-box__wrapper {
+	background-color: transparent !important;
 }
 
 :deep(.cyber-message-box::before) {
@@ -630,6 +643,86 @@ body::after {
 	}
 }
 
+/* 导出选择弹窗样式 */
+:deep(.cyber-export-dialog-box) {
+	background: linear-gradient(135deg, var(--cyber-bg-card), var(--cyber-bg-dark)) !important;
+	border: 2px solid var(--cyber-accent) !important;
+	box-shadow: 
+		0 0 30px rgba(0, 212, 255, 0.4),
+		0 0 60px rgba(0, 212, 255, 0.2),
+		inset 0 0 20px rgba(0, 212, 255, 0.1) !important;
+}
+
+:deep(.cyber-export-dialog-box::before) {
+	height: 3px !important;
+	background: linear-gradient(90deg, 
+		var(--cyber-accent), 
+		var(--cyber-primary), 
+		var(--cyber-secondary),
+		var(--cyber-accent)) !important;
+	animation: cyberBorderFlow 2s linear infinite !important;
+}
+
+/* 删除确认弹窗样式 */
+:deep(.cyber-delete-dialog-box) {
+	background: linear-gradient(135deg, var(--cyber-bg-card), var(--cyber-bg-dark)) !important;
+	border: 2px solid var(--cyber-secondary) !important;
+	box-shadow: 
+		0 0 30px rgba(255, 0, 128, 0.4),
+		0 0 60px rgba(255, 0, 128, 0.2),
+		inset 0 0 20px rgba(255, 0, 128, 0.1) !important;
+}
+
+:deep(.cyber-delete-dialog-box::before) {
+	height: 3px !important;
+	background: linear-gradient(90deg, 
+		var(--cyber-secondary), 
+		var(--cyber-primary), 
+		var(--cyber-accent),
+		var(--cyber-secondary)) !important;
+	animation: cyberBorderFlow 2s linear infinite !important;
+}
+
+/* 导出结果弹窗样式 */
+:deep(.cyber-result-dialog-box) {
+	background: linear-gradient(135deg, var(--cyber-bg-card), var(--cyber-bg-dark)) !important;
+	border: 2px solid var(--cyber-primary) !important;
+	box-shadow: 
+		0 0 30px rgba(0, 255, 136, 0.4),
+		0 0 60px rgba(0, 255, 136, 0.2),
+		inset 0 0 20px rgba(0, 255, 136, 0.1) !important;
+}
+
+:deep(.cyber-result-dialog-box::before) {
+	height: 3px !important;
+	background: linear-gradient(90deg, 
+		var(--cyber-primary), 
+		var(--cyber-accent), 
+		var(--cyber-secondary),
+		var(--cyber-primary)) !important;
+	animation: cyberBorderFlow 2s linear infinite !important;
+}
+
+/* 自定义选择框样式 */
+.cyber-select {
+	background: var(--cyber-bg-dark) !important;
+	border: 1px solid var(--cyber-border) !important;
+	color: var(--cyber-text) !important;
+	border-radius: 6px !important;
+	transition: all 0.3s ease !important;
+}
+
+.cyber-select:focus {
+	border-color: var(--cyber-primary) !important;
+	box-shadow: 0 0 10px rgba(0, 255, 136, 0.3) !important;
+	outline: none !important;
+}
+
+.cyber-select option {
+	background: var(--cyber-bg-dark) !important;
+	color: var(--cyber-text) !important;
+}
+
 :deep(.el-message-box__headerbtn) {
 	top: 20px !important;
 	right: 24px !important;
@@ -727,6 +820,55 @@ body::after {
 }
 
 :deep(.el-message-box__btns .el-button--default:hover) {
+	background: var(--cyber-bg-dark) !important;
+	border-color: var(--cyber-primary) !important;
+	color: var(--cyber-primary) !important;
+}
+
+/* 强制覆盖Element Plus的所有弹窗样式 */
+.el-message-box,
+.el-message-box * {
+	color: var(--cyber-text) !important;
+}
+
+.el-message-box__header {
+	background: var(--cyber-bg-dark) !important;
+	border-bottom: 1px solid var(--cyber-border) !important;
+}
+
+.el-message-box__content {
+	background: var(--cyber-bg-card) !important;
+	color: var(--cyber-text) !important;
+}
+
+.el-message-box__btns {
+	background: var(--cyber-bg-dark) !important;
+	border-top: 1px solid var(--cyber-border) !important;
+}
+
+.el-message-box__message {
+	color: var(--cyber-text) !important;
+}
+
+/* 强制覆盖按钮样式 */
+.el-message-box__btns .el-button {
+	background: var(--cyber-bg-card) !important;
+	border: 1px solid var(--cyber-border) !important;
+	color: var(--cyber-text) !important;
+}
+
+.el-message-box__btns .el-button--primary {
+	background: linear-gradient(45deg, var(--cyber-primary), var(--cyber-accent)) !important;
+	border: 1px solid var(--cyber-primary) !important;
+	color: var(--cyber-bg-dark) !important;
+}
+
+.el-message-box__btns .el-button--primary:hover {
+	background: linear-gradient(45deg, var(--cyber-accent), var(--cyber-primary)) !important;
+	box-shadow: 0 0 20px rgba(0, 255, 136, 0.6) !important;
+}
+
+.el-message-box__btns .el-button--default:hover {
 	background: var(--cyber-bg-dark) !important;
 	border-color: var(--cyber-primary) !important;
 	color: var(--cyber-primary) !important;

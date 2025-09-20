@@ -239,19 +239,42 @@ const toggleFolderSelection = (folderPath: string) => {
 
 // 导出功能
 const showExportDialog = () => {
-  ElMessageBox.prompt('请选择导出类型', '导出链接', {
-    confirmButtonText: '导出',
-    cancelButtonText: '取消',
-    inputType: 'select',
-    inputOptions: [
-      { value: 'direct', label: 'Direct Link' },
-      { value: 'webp', label: 'WebP Link' },
-      { value: 'html', label: 'HTML' },
-      { value: 'markdown', label: 'Markdown' }
-    ],
-    customClass: 'cyber-message-box'
-  }).then(({ value }) => {
-    exportLinks(value as ExportOptions['type'])
+  // 创建一个自定义的导出选择弹窗
+  ElMessageBox({
+    title: '🔗 导出链接',
+    message: `
+      <div class="cyber-export-dialog">
+        <div class="mb-4">
+          <label class="block text-sm font-medium cyber-text mb-2">选择导出格式：</label>
+          <select id="exportType" class="cyber-select w-full p-3 bg-cyber-bg-dark border border-cyber-border rounded text-cyber-text">
+            <option value="direct">📎 Direct Link</option>
+            <option value="webp">🖼️ WebP Link</option>
+            <option value="html">🌐 HTML</option>
+            <option value="markdown">📝 Markdown</option>
+          </select>
+        </div>
+        <div class="text-xs cyber-text-dim">
+          将导出选中的 ${selectedCount.value} 项内容
+        </div>
+      </div>
+    `,
+    dangerouslyUseHTMLString: true,
+    showCancelButton: true,
+    confirmButtonText: '🚀 导出',
+    cancelButtonText: '❌ 取消',
+    customClass: 'cyber-message-box cyber-export-dialog-box',
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        const selectElement = document.getElementById('exportType') as HTMLSelectElement
+        const selectedType = selectElement?.value as ExportOptions['type']
+        if (selectedType) {
+          exportLinks(selectedType)
+        }
+        done()
+      } else {
+        done()
+      }
+    }
   }).catch(() => {})
 }
 
@@ -285,13 +308,28 @@ const exportLinks = (type: ExportOptions['type']) => {
   })
   
   // 显示导出结果弹窗
-  ElMessageBox.alert(exportText, '导出结果', {
-    confirmButtonText: '复制',
-    customClass: 'cyber-message-box',
+  ElMessageBox({
+    title: '📋 导出结果',
+    message: `
+      <div class="cyber-result-dialog">
+        <div class="mb-4">
+          <div class="cyber-text text-sm mb-2">导出内容预览：</div>
+          <div class="cyber-input p-4 max-h-60 overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" onclick="this.select()">${exportText}</div>
+        </div>
+        <div class="text-xs cyber-text-dim">
+          点击上方文本框可全选内容，或点击下方按钮复制到剪贴板
+        </div>
+      </div>
+    `,
+    dangerouslyUseHTMLString: true,
+    showCancelButton: true,
+    confirmButtonText: '📋 复制到剪贴板',
+    cancelButtonText: '❌ 关闭',
+    customClass: 'cyber-message-box cyber-result-dialog-box',
     showClose: true
   }).then(() => {
     copy(exportText)
-    ElMessage.success('链接已复制到剪贴板')
+    ElMessage.success('🎉 链接已复制到剪贴板')
   }).catch(() => {})
 }
 
@@ -325,16 +363,24 @@ const getSelectedItems = (): SelectedItem[] => {
 
 // 批量删除
 const batchDelete = () => {
-  ElMessageBox.confirm(
-    `确定要删除选中的 ${selectedCount.value} 项吗？此操作不可撤销。`,
-    '批量删除确认',
-    {
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-      type: 'warning',
-      customClass: 'cyber-message-box'
-    }
-  ).then(() => {
+  ElMessageBox({
+    title: '⚠️ 批量删除确认',
+    message: `
+      <div class="cyber-delete-dialog">
+        <div class="text-center mb-4">
+          <div class="text-6xl mb-4">🗑️</div>
+          <div class="cyber-text text-lg mb-2">确定要删除选中的 <span class="text-cyber-secondary font-bold">${selectedCount.value}</span> 项吗？</div>
+          <div class="cyber-text-dim text-sm">此操作不可撤销，请谨慎操作！</div>
+        </div>
+      </div>
+    `,
+    dangerouslyUseHTMLString: true,
+    showCancelButton: true,
+    confirmButtonText: '💥 确认删除',
+    cancelButtonText: '❌ 取消',
+    customClass: 'cyber-message-box cyber-delete-dialog-box',
+    type: 'warning'
+  }).then(() => {
     const selectedImages = uploadedImages.value.filter(img => img.isSelected)
     const keysToDelete = selectedImages.map(img => img.key)
     
@@ -342,9 +388,9 @@ const batchDelete = () => {
       requestDeleteImage({ keys: keysToDelete.join(',') }).then(() => {
         uploadedImages.value = uploadedImages.value.filter(img => !img.isSelected)
         selectedFolders.value = []
-        ElMessage.success('删除成功')
+        ElMessage.success('🎉 删除成功')
       }).catch(() => {
-        ElMessage.error('删除失败')
+        ElMessage.error('❌ 删除失败')
       })
     }
   }).catch(() => {})
