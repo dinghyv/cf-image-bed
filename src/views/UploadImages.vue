@@ -128,7 +128,7 @@ import { computed, onMounted, onUnmounted, ref, h } from 'vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import formatBytes from '../utils/format-bytes'
 import { ElNotification as elNotify, ElMessage } from 'element-plus'
-import { requestUploadImages, requestListImages } from '../utils/request'
+import { requestUploadImages, requestAllFolders } from '../utils/request'
 import { useRouter } from 'vue-router'
 import ImageBox from '../components/ImageBox.vue'
 import ResultList from '../components/ResultList.vue'
@@ -161,15 +161,8 @@ const onPaste = (e: ClipboardEvent) => {
 // 获取可用文件夹列表
 const loadAvailableFolders = async () => {
 	try {
-		const data = await requestListImages(<ImgReq> {
-			limit: 1,
-			delimiter: '/'
-		})
-		if (data.prefixes && data.prefixes.length) {
-			availableFolders.value = ['/', ...data.prefixes]
-		} else {
-			availableFolders.value = ['/']
-		}
+		const folders = await requestAllFolders()
+		availableFolders.value = folders
 	} catch (error) {
 		console.error('Failed to load folders:', error)
 		availableFolders.value = ['/']

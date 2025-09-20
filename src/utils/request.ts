@@ -54,3 +54,4 @@ export const requestUploadImages = (data: FormData) : Promise<ImgItem[]> => requ
 export const createFolder = (data: Folder) => request.post('/rest/folder', data)
 export const checkToken = (data: AuthToken) => request.post('/rest/checkToken', data)
 export const requestDeleteImage = (data: ImgDel) => request.delete('/rest', { data })
+export const requestAllFolders = (): Promise<string[]> => request.post('/rest/folders', {})

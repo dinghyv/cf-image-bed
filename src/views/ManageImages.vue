@@ -124,7 +124,7 @@
 </template>
 
 <script setup lang="ts">
-import { requestListImages, requestDeleteImage, createFolder } from '../utils/request'
+import { requestListImages, requestDeleteImage, createFolder, requestAllFolders } from '../utils/request'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import formatBytes from '../utils/format-bytes'
 import { computed, onMounted, ref } from 'vue'
@@ -416,12 +416,25 @@ const batchDelete = () => {
 }
 
 // 移动文件夹功能
-const showMoveDialog = () => {
+const showMoveDialog = async () => {
   const selectedImages = uploadedImages.value.filter(img => img.isSelected)
   if (selectedImages.length === 0) {
     ElMessage.warning('请先选择要移动的图片')
     return
   }
+
+  // 获取所有可用文件夹
+  let allFolders = ['/']
+  try {
+    allFolders = await requestAllFolders()
+  } catch (error) {
+    console.error('Failed to load folders:', error)
+    ElMessage.error('获取文件夹列表失败')
+    return
+  }
+
+  // 过滤掉当前文件夹
+  const availableFolders = allFolders.filter(folder => folder !== delimiter.value)
 
   // 创建目标文件夹选择弹窗
   ElMessageBox({
@@ -431,7 +444,7 @@ const showMoveDialog = () => {
         <div class="mb-4">
           <div class="cyber-text text-sm mb-2">选择目标文件夹：</div>
           <select id="targetFolder" class="cyber-select w-full p-3 bg-cyber-bg-dark border border-cyber-border rounded text-cyber-text">
-            ${prefixes.value.filter(p => p !== delimiter.value).map(folder => 
+            ${availableFolders.map(folder => 
               `<option value="${folder}">📁 ${folder === '/' ? '根目录' : folder.replace('/', '')}</option>`
             ).join('')}
           </select>

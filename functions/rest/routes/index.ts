@@ -146,6 +146,26 @@ router.post('/upload', auth, async (req: Request, env: Env) => {
     return json(Build(urls, errs.toString()))
 })
 
+// 获取所有文件夹
+router.post('/folders', auth, async (req: Request, env: Env) => {
+    try {
+        const options = <R2ListOptions>{
+            limit: 1000,
+            delimiter: "/"
+        }
+        const list = await env.R2.list(options)
+        const allFolders = ['/'] // 总是包含根目录
+        
+        if (list.delimitedPrefixes && list.delimitedPrefixes.length > 0) {
+            allFolders.push(...list.delimitedPrefixes)
+        }
+        
+        return json(Ok(allFolders))
+    } catch (e) {
+        return json(Fail("Failed to get folders"))
+    }
+})
+
 // 创建目录
 router.post("/folder", auth, async (req: Request, env: Env) => {
     try {
