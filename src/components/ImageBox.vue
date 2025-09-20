@@ -3,7 +3,7 @@
 		<loading-overlay :loading="loading" />
 
 		<!-- 图片容器 -->
-		<div class="relative overflow-hidden">
+		<div class="relative overflow-hidden cursor-pointer" @click="showPreview">
 			<el-image
 				class="block w-full h-40 lg:h-60 transition-transform duration-300 group-hover:scale-105"
 				:src="src"
@@ -14,6 +14,13 @@
 			
 			<!-- 悬停时的光效 -->
 			<div class="absolute inset-0 bg-gradient-to-t from-cyber-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+			
+			<!-- 预览提示 -->
+			<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+				<div class="bg-cyber-bg-dark/80 backdrop-blur-sm rounded-full p-2">
+					<font-awesome-icon :icon="faEye" class="text-cyber-primary text-sm" />
+				</div>
+			</div>
 		</div>
 
 		<!-- 信息面板 -->
@@ -96,10 +103,10 @@
 </template>
 
 <script setup lang="ts">
-import { faXmark, faTrash, faCopy } from '@fortawesome/free-solid-svg-icons'
+import { faXmark, faTrash, faCopy, faEye, faDownload } from '@fortawesome/free-solid-svg-icons'
 import copy from 'copy-to-clipboard'
 import formatBytes from '../utils/format-bytes'
-import {ElTooltip, ElDivider, ElPopconfirm, ElImage, ElMessage} from 'element-plus'
+import {ElTooltip, ElDivider, ElPopconfirm, ElImage, ElMessage, ElMessageBox} from 'element-plus'
 import { ref } from 'vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 
@@ -124,5 +131,74 @@ const copyLink = (link : string) => {
   } else {
     ElMessage.success('链接复制失败')
   }
+}
+
+const showPreview = () => {
+  ElMessageBox({
+    title: '🖼️ 图片预览',
+    message: `
+      <div class="cyber-preview-dialog">
+        <div class="text-center mb-4">
+          <img src="${props.src}" alt="${props.name}" class="max-w-full max-h-96 mx-auto rounded-lg shadow-lg" />
+        </div>
+        <div class="cyber-text text-sm mb-2">
+          <strong>文件名：</strong>${props.name}
+        </div>
+        <div class="cyber-text text-sm mb-4">
+          <strong>大小：</strong>${formatBytes(props.size)}
+        </div>
+      </div>
+    `,
+    dangerouslyUseHTMLString: true,
+    showCancelButton: true,
+    confirmButtonText: '📥 下载',
+    cancelButtonText: '🗑️ 删除',
+    customClass: 'cyber-message-box cyber-preview-dialog-box',
+    showClose: true,
+    customStyle: {
+      width: '90%',
+      maxWidth: '600px'
+    },
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        // 下载功能
+        downloadImage()
+        done()
+      } else if (action === 'cancel') {
+        // 删除功能
+        confirmDelete()
+        done()
+      } else {
+        done()
+      }
+    }
+  }).catch(() => {})
+}
+
+const downloadImage = () => {
+  const link = document.createElement('a')
+  link.href = props.copyUrl
+  link.download = props.name
+  link.target = '_blank'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  ElMessage.success('🎉 下载已开始')
+}
+
+const confirmDelete = () => {
+  ElMessageBox.confirm(
+    `确定要删除图片 "${props.name}" 吗？此操作不可撤销。`,
+    '删除确认',
+    {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      customClass: 'cyber-message-box'
+    }
+  ).then(() => {
+    emit('delete')
+    ElMessage.success('🎉 图片删除成功')
+  }).catch(() => {})
 }
 </script>

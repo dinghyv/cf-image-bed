@@ -47,23 +47,47 @@
         <template #label>
           <span class="flex items-center">
             <font-awesome-icon :icon="faCode" class="mr-2" />
-            HTML
+            HTML (Direct)
           </span>
         </template>
         <div class="cyber-input p-4 max-w-full overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" @click="copyLink">
-          {{ htmlLinks() }}
+          {{ htmlDirectLinks() }}
         </div>
       </el-tab-pane>
       
       <el-tab-pane name="fifth">
         <template #label>
           <span class="flex items-center">
-            <font-awesome-icon :icon="faFileText" class="mr-2" />
-            Markdown
+            <font-awesome-icon :icon="faCode" class="mr-2" />
+            HTML (WebP)
           </span>
         </template>
         <div class="cyber-input p-4 max-w-full overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" @click="copyLink">
-          {{ markdownLinks() }}
+          {{ htmlWebpLinks() }}
+        </div>
+      </el-tab-pane>
+      
+      <el-tab-pane name="sixth">
+        <template #label>
+          <span class="flex items-center">
+            <font-awesome-icon :icon="faFileText" class="mr-2" />
+            Markdown (Direct)
+          </span>
+        </template>
+        <div class="cyber-input p-4 max-w-full overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" @click="copyLink">
+          {{ markdownDirectLinks() }}
+        </div>
+      </el-tab-pane>
+      
+      <el-tab-pane name="seventh">
+        <template #label>
+          <span class="flex items-center">
+            <font-awesome-icon :icon="faFileText" class="mr-2" />
+            Markdown (WebP)
+          </span>
+        </template>
+        <div class="cyber-input p-4 max-w-full overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" @click="copyLink">
+          {{ markdownWebpLinks() }}
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -83,12 +107,21 @@ const props = defineProps<{
 }>()
 
 const activeName = ref('first')
-const htmlLinks = () => {
+const htmlDirectLinks = () => {
   let text = ''
   const length = props.imageList.length
   for(let i = 0; i < length; i++) {
     const it = props.imageList[i]
-    text += `<a href="${it.copyUrl}" target="_blank"><img src="${it.copyUrl}"></a>\n`
+    text += `<a href="${it.copyUrl}" target="_blank"><img src="${it.copyUrl}" alt="${it.filename || it.key}"></a>\n`
+  }
+  return text
+}
+const htmlWebpLinks = () => {
+  let text = ''
+  const length = props.imageList.length
+  for(let i = 0; i < length; i++) {
+    const it = props.imageList[i]
+    text += `<a href="${it.webpUrl}" target="_blank"><img src="${it.webpUrl}" alt="${it.filename || it.key}"></a>\n`
   }
   return text
 }
@@ -101,12 +134,21 @@ const viewLinks = () => {
   }
   return text
 }
-const markdownLinks = () => {
+const markdownDirectLinks = () => {
   let text = ''
   const length = props.imageList.length
   for(let i = 0; i < length; i++) {
     const it = props.imageList[i]
-    text += `![${it.filename}](${it.copyUrl})\n`
+    text += `![${it.filename || it.key}](${it.copyUrl})\n`
+  }
+  return text
+}
+const markdownWebpLinks = () => {
+  let text = ''
+  const length = props.imageList.length
+  for(let i = 0; i < length; i++) {
+    const it = props.imageList[i]
+    text += `![${it.filename || it.key}](${it.webpUrl})\n`
   }
   return text
 }

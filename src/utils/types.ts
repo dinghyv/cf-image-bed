@@ -25,7 +25,7 @@ export interface ImgItem {
 }
 
 export interface ExportOptions {
-	type: 'direct' | 'webp' | 'html' | 'markdown'
+	type: 'direct' | 'webp' | 'html-direct' | 'html-webp' | 'markdown-direct' | 'markdown-webp'
 	includeFolder: boolean
 }
 

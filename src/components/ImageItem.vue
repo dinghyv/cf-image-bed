@@ -69,11 +69,11 @@
               </div>
             </div>
 
-            <!-- HTML链接 -->
+            <!-- HTML链接 (Direct) -->
             <div class="w-full">
               <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
                 <font-awesome-icon :icon="faCode" class="mr-2 text-cyber-accent" />
-                HTML
+                HTML (Direct)
               </label>
               <div class="relative">
                 <input 
@@ -88,15 +88,53 @@
               </div>
             </div>
 
-            <!-- Markdown链接 -->
+            <!-- HTML链接 (WebP) -->
+            <div class="w-full">
+              <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
+                <font-awesome-icon :icon="faCode" class="mr-2 text-cyber-accent" />
+                HTML (WebP)
+              </label>
+              <div class="relative">
+                <input 
+                  :value="htmlLink(it.webpUrl, it.filename)" 
+                  class="cyber-input w-full cursor-pointer pr-10" 
+                  readonly 
+                  @click="copyLink" 
+                />
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-primary">
+                  <font-awesome-icon :icon="faCopy" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Markdown链接 (Direct) -->
             <div class="w-full">
               <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
                 <font-awesome-icon :icon="faFileText" class="mr-2 text-cyber-secondary" />
-                Markdown
+                Markdown (Direct)
               </label>
               <div class="relative">
                 <input 
                   :value="markdownLink(it.copyUrl, it.filename)" 
+                  class="cyber-input w-full cursor-pointer pr-10" 
+                  readonly 
+                  @click="copyLink" 
+                />
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-primary">
+                  <font-awesome-icon :icon="faCopy" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Markdown链接 (WebP) -->
+            <div class="w-full">
+              <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
+                <font-awesome-icon :icon="faFileText" class="mr-2 text-cyber-secondary" />
+                Markdown (WebP)
+              </label>
+              <div class="relative">
+                <input 
+                  :value="markdownLink(it.webpUrl, it.filename)" 
                   class="cyber-input w-full cursor-pointer pr-10" 
                   readonly 
                   @click="copyLink" 

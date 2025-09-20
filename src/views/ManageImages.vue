@@ -8,7 +8,7 @@
 				<div>
 					<div class="cyber-text text-2xl font-bold mb-2 flex items-center">
 						<font-awesome-icon :icon="faCog" class="mr-3 text-cyber-primary" />
-						图片管理中心
+						管理
 					</div>
 					<div class="cyber-text-dim text-sm">
 						已上传 <span class="text-cyber-primary font-bold">{{ uploadedImages.length }}</span> 张图片，
@@ -249,8 +249,10 @@ const showExportDialog = () => {
           <select id="exportType" class="cyber-select w-full p-3 bg-cyber-bg-dark border border-cyber-border rounded text-cyber-text">
             <option value="direct">📎 Direct Link</option>
             <option value="webp">🖼️ WebP Link</option>
-            <option value="html">🌐 HTML</option>
-            <option value="markdown">📝 Markdown</option>
+            <option value="html-direct">🌐 HTML (Direct Link)</option>
+            <option value="html-webp">🌐 HTML (WebP Link)</option>
+            <option value="markdown-direct">📝 Markdown (Direct Link)</option>
+            <option value="markdown-webp">📝 Markdown (WebP Link)</option>
           </select>
         </div>
         <div class="text-xs cyber-text-dim">
@@ -296,11 +298,17 @@ const exportLinks = (type: ExportOptions['type']) => {
           case 'webp':
             exportText += `${img.webpUrl}\n`
             break
-          case 'html':
-            exportText += `<a href="${img.copyUrl}" target="_blank"><img src="${img.copyUrl}"></a>\n`
+          case 'html-direct':
+            exportText += `<a href="${img.copyUrl}" target="_blank"><img src="${img.copyUrl}" alt="${img.filename || img.key}"></a>\n`
             break
-          case 'markdown':
+          case 'html-webp':
+            exportText += `<a href="${img.webpUrl}" target="_blank"><img src="${img.webpUrl}" alt="${img.filename || img.key}"></a>\n`
+            break
+          case 'markdown-direct':
             exportText += `![${img.filename || img.key}](${img.copyUrl})\n`
+            break
+          case 'markdown-webp':
+            exportText += `![${img.filename || img.key}](${img.webpUrl})\n`
             break
         }
       })
@@ -314,7 +322,7 @@ const exportLinks = (type: ExportOptions['type']) => {
       <div class="cyber-result-dialog">
         <div class="mb-4">
           <div class="cyber-text text-sm mb-2">导出内容预览：</div>
-          <div class="cyber-input p-4 max-h-60 overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" onclick="this.select()">${exportText}</div>
+          <div class="cyber-input p-4 max-h-80 overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" onclick="this.select()">${exportText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
         </div>
         <div class="text-xs cyber-text-dim">
           点击上方文本框可全选内容，或点击下方按钮复制到剪贴板
@@ -325,8 +333,13 @@ const exportLinks = (type: ExportOptions['type']) => {
     showCancelButton: true,
     confirmButtonText: '📋 复制到剪贴板',
     cancelButtonText: '❌ 关闭',
-    customClass: 'cyber-message-box cyber-result-dialog-box',
-    showClose: true
+    customClass: 'cyber-message-box cyber-result-dialog-box cyber-large-dialog',
+    showClose: true,
+    customStyle: {
+      width: '80%',
+      maxWidth: '800px',
+      minHeight: '400px'
+    }
   }).then(() => {
     copy(exportText)
     ElMessage.success('🎉 链接已复制到剪贴板')

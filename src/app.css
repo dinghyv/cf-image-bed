@@ -720,6 +720,55 @@ body::after {
 	animation: cyberBorderFlow 2s linear infinite !important;
 }
 
+/* 大弹窗样式 */
+:deep(.cyber-large-dialog) {
+	width: 80% !important;
+	max-width: 800px !important;
+	min-height: 400px !important;
+}
+
+:deep(.cyber-large-dialog .el-message-box__content) {
+	padding: 32px !important;
+	min-height: 300px !important;
+}
+
+:deep(.cyber-large-dialog .cyber-input) {
+	max-height: 320px !important;
+	font-size: 13px !important;
+	line-height: 1.5 !important;
+}
+
+/* 图片预览弹窗样式 */
+:deep(.cyber-preview-dialog-box) {
+	background: var(--cyber-bg-card) !important;
+	border: none !important;
+	box-shadow: 
+		0 0 0 1px rgba(0, 255, 136, 0.4),
+		0 8px 40px rgba(0, 0, 0, 0.9),
+		0 0 60px rgba(0, 255, 136, 0.2) !important;
+}
+
+:deep(.cyber-preview-dialog-box::before) {
+	height: 3px !important;
+	background: linear-gradient(90deg, 
+		var(--cyber-primary), 
+		var(--cyber-accent), 
+		var(--cyber-secondary),
+		var(--cyber-primary)) !important;
+	animation: cyberBorderFlow 2s linear infinite !important;
+}
+
+:deep(.cyber-preview-dialog-box .el-message-box__content) {
+	padding: 24px !important;
+	background: var(--cyber-bg-card) !important;
+}
+
+:deep(.cyber-preview-dialog img) {
+	border: 2px solid var(--cyber-border) !important;
+	border-radius: 8px !important;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
 /* 自定义选择框样式 */
 .cyber-select {
 	background: var(--cyber-bg-dark) !important;
@@ -991,6 +1040,35 @@ body::after {
 	:deep(.el-message-box) {
 		margin: 20px !important;
 		width: calc(100% - 40px) !important;
+	}
+	
+	:deep(.cyber-large-dialog) {
+		width: 95% !important;
+		max-width: none !important;
+		min-height: 300px !important;
+	}
+	
+	:deep(.cyber-large-dialog .el-message-box__content) {
+		padding: 20px !important;
+		min-height: 200px !important;
+	}
+	
+	:deep(.cyber-large-dialog .cyber-input) {
+		max-height: 200px !important;
+		font-size: 12px !important;
+	}
+	
+	:deep(.cyber-preview-dialog-box) {
+		width: 95% !important;
+		max-width: none !important;
+	}
+	
+	:deep(.cyber-preview-dialog-box .el-message-box__content) {
+		padding: 16px !important;
+	}
+	
+	:deep(.cyber-preview-dialog img) {
+		max-height: 60vh !important;
 	}
 	
 	.multi-select-checkbox {

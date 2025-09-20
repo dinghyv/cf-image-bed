@@ -77,8 +77,8 @@ import { ElScrollbar, ElConfigProvider } from 'element-plus'
 import zhCn from "element-plus/es/locale/lang/zh-cn"
 import CyberEffects from './components/CyberEffects.vue'
 
-const repoLink = 'https://github.com/shenweiyan/Picx4R2'
-const repoName = 'GitHub'
+const repoLink = 'https://www.antwen.com'
+const repoName = 'Antwen'
 const appName = '图床管理工具'
 
 document.title = appName
