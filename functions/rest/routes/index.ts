@@ -81,12 +81,26 @@ router.post('/list', auth, async (req: Request, env: Env) => {
     
     console.log('List request - delimiter:', data.delimiter, 'include:', include)
     
-    const options = <R2ListOptions>{
-        limit: data.limit,
-        cursor: data.cursor,
-        delimiter: "/", // 总是使用 "/" 作为delimiter来获取文件夹结构
-        prefix: include
+    // 根据是否在根目录使用不同的查询策略
+    let options: R2ListOptions
+    if (data.delimiter === "/") {
+        // 根目录：直接查询所有内容
+        options = {
+            limit: data.limit,
+            cursor: data.cursor,
+            delimiter: "/"
+        }
+    } else {
+        // 子文件夹：使用prefix限制查询范围
+        options = {
+            limit: data.limit,
+            cursor: data.cursor,
+            delimiter: "/",
+            prefix: include
+        }
     }
+    
+    console.log('R2 query options:', options)
     const list = await env.R2.list(options)
     
     console.log('R2 list result - objects count:', list.objects.length, 'prefixes:', list.delimitedPrefixes)
@@ -121,23 +135,36 @@ router.post('/list', auth, async (req: Request, env: Env) => {
         }
     })
     
-    // 处理文件夹列表 - 过滤出当前文件夹的直接子文件夹
+    // 处理文件夹列表
     let filteredPrefixes = list.delimitedPrefixes || []
+    
+    // 如果指定了prefix（在子文件夹中），需要过滤出直接子文件夹
     if (include) {
-        // 只返回当前文件夹的直接子文件夹
+        console.log('Filtering prefixes for include:', include)
+        console.log('All prefixes before filtering:', filteredPrefixes)
+        
         filteredPrefixes = filteredPrefixes.filter(prefix => {
+            console.log('Checking prefix:', prefix, 'against include:', include)
+            
             // 确保prefix以当前路径开头
             if (!prefix.startsWith(include)) {
+                console.log('Prefix does not start with include, skipping')
                 return false
             }
             
             // 获取相对于当前文件夹的路径
             const relativePath = prefix.substring(include.length)
+            console.log('Relative path:', relativePath)
+            
             // 移除开头的斜杠
             const cleanRelativePath = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
+            console.log('Clean relative path:', cleanRelativePath)
             
             // 直接子文件夹应该只有一层，即cleanRelativePath不包含斜杠
-            return cleanRelativePath && !cleanRelativePath.includes('/')
+            const isDirectSubfolder = cleanRelativePath && !cleanRelativePath.includes('/')
+            console.log('Is direct subfolder:', isDirectSubfolder)
+            
+            return isDirectSubfolder
         })
     }
     
