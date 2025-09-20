@@ -53,7 +53,7 @@
             <!-- Markdown链接 -->
             <div class="w-full">
               <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
-                <font-awesome-icon :icon="faMarkdown" class="mr-2 text-cyber-secondary" />
+                <font-awesome-icon :icon="faFileText" class="mr-2 text-cyber-secondary" />
                 Markdown
               </label>
               <div class="relative">
@@ -99,7 +99,7 @@ import type { ImgItem } from '../utils/types'
 import copy from 'copy-to-clipboard'
 import { ElCard, ElImage, ElMessage } from 'element-plus'
 import { ref } from 'vue'
-import { faImage, faCode, faMarkdown, faLink, faCopy } from '@fortawesome/free-solid-svg-icons'
+import { faImage, faCode, faLink, faCopy, faFileText } from '@fortawesome/free-solid-svg-icons'
 const props = defineProps<{
   imageList: ImgItem[]
 }>()

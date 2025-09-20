@@ -34,7 +34,7 @@
       <el-tab-pane name="third">
         <template #label>
           <span class="flex items-center">
-            <font-awesome-icon :icon="faMarkdown" class="mr-2" />
+            <font-awesome-icon :icon="faFileText" class="mr-2" />
             Markdown
           </span>
         </template>
@@ -65,7 +65,7 @@ import type { TabsPaneContext } from 'element-plus'
 import ImageItem from '../components/ImageItem.vue'
 import type { ImgItem } from '../utils/types'
 import copy from 'copy-to-clipboard'
-import { faCheckCircle, faEye, faCode, faMarkdown, faLink } from '@fortawesome/free-solid-svg-icons'
+import { faCheckCircle, faEye, faCode, faFileText, faLink } from '@fortawesome/free-solid-svg-icons'
 const props = defineProps<{
   imageList: ImgItem[]
 }>()

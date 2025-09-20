@@ -55,7 +55,7 @@
 					<div class="cyber-btn w-full h-12 cursor-pointer flex items-center justify-center" 
 						 :class="{ 'area-disabled': loading }" 
 						 @click="input?.click()">
-						<font-awesome-icon :icon="faImages" class="mr-2" />
+						<font-awesome-icon :icon="faImage" class="mr-2" />
 						<span class="hidden md:inline">选择</span>
 					</div>
 				</div>
@@ -75,7 +75,7 @@
 					<div class="cyber-btn w-full h-12 cursor-pointer flex items-center justify-center bg-cyber-secondary border-cyber-secondary" 
 						 :class="{ 'area-disabled': loading }" 
 						 @click="clearInput">
-						<font-awesome-icon :icon="faTrashAlt" class="mr-2" />
+						<font-awesome-icon :icon="faTrash" class="mr-2" />
 						<span class="hidden md:inline">清除</span>
 					</div>
 				</div>
@@ -113,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { faImages, faTrashAlt, faCopy } from '@fortawesome/free-regular-svg-icons'
+import { faImage, faTrash, faCopy } from '@fortawesome/free-solid-svg-icons'
 import { faUpload } from '@fortawesome/free-solid-svg-icons'
 import { computed, onMounted, onUnmounted, ref, h } from 'vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'

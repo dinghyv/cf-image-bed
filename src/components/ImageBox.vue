@@ -31,7 +31,7 @@
 						class="w-6 h-6 flex items-center justify-center cursor-pointer text-cyber-secondary hover:text-cyber-primary transition-colors"
 						@click="emit('delete')"
 					>
-						<font-awesome-icon :icon="faTimesCircle" />
+						<font-awesome-icon :icon="faXmark" />
 					</div>
 				</div>
 				
@@ -71,7 +71,7 @@
 					>
 						<template #reference>
 							<div class="flex-1 flex items-center justify-center cursor-pointer hover:bg-cyber-secondary/20 transition-colors duration-200">
-								<font-awesome-icon :icon="faTrashAlt" class="mr-2 text-cyber-secondary" />
+								<font-awesome-icon :icon="faTrash" class="mr-2 text-cyber-secondary" />
 								<span class="text-xs">删除</span>
 							</div>
 						</template>
@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { faTimesCircle, faTrashAlt, faCopy } from '@fortawesome/free-regular-svg-icons'
+import { faXmark, faTrash, faCopy } from '@fortawesome/free-solid-svg-icons'
 import copy from 'copy-to-clipboard'
 import formatBytes from '../utils/format-bytes'
 import {ElTooltip, ElDivider, ElPopconfirm, ElImage, ElMessage} from 'element-plus'
