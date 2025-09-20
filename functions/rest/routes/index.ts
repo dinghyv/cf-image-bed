@@ -185,6 +185,63 @@ router.post("/folder", auth, async (req: Request, env: Env) => {
     }
 })
 
+// 移动图片
+router.post('/move', auth, async (req: Request, env: Env) => {
+    try {
+        const data = await req.json() as { keys: string[], targetFolder: string }
+        const { keys, targetFolder } = data
+        
+        if (!keys || !Array.isArray(keys) || keys.length === 0) {
+            return json(Fail("No keys provided"))
+        }
+        
+        if (!targetFolder) {
+            return json(Fail("No target folder provided"))
+        }
+        
+        const movedKeys: string[] = []
+        const errors: string[] = []
+        
+        for (const key of keys) {
+            try {
+                // 获取原文件
+                const originalObject = await env.R2.get(key)
+                if (!originalObject) {
+                    errors.push(`File ${key} not found`)
+                    continue
+                }
+                
+                // 生成新的文件路径
+                const fileName = key.split('/').pop() || key
+                const newKey = targetFolder === '/' ? 
+                    `${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${fileName}` :
+                    `${targetFolder.replace(/\/$/, '')}/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${fileName}`
+                
+                // 复制到新位置
+                await env.R2.put(newKey, originalObject.body, {
+                    httpMetadata: originalObject.httpMetadata,
+                    customMetadata: originalObject.customMetadata
+                })
+                
+                // 删除原文件
+                await env.R2.delete(key)
+                
+                movedKeys.push(newKey)
+            } catch (error) {
+                errors.push(`Failed to move ${key}: ${error}`)
+            }
+        }
+        
+        if (errors.length > 0) {
+            return json(Build(movedKeys, errors.join('; ')))
+        }
+        
+        return json(Ok(movedKeys))
+    } catch (e) {
+        return json(Fail("Move operation failed"))
+    }
+})
+
 // 删除key
 router.get('/del/:id+', async (req: Request, env: Env) => {
     const key = req.params.id

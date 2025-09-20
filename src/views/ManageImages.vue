@@ -124,7 +124,7 @@
 </template>
 
 <script setup lang="ts">
-import { requestListImages, requestDeleteImage, createFolder, requestAllFolders } from '../utils/request'
+import { requestListImages, requestDeleteImage, createFolder, requestAllFolders, requestMoveImages } from '../utils/request'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import formatBytes from '../utils/format-bytes'
 import { computed, onMounted, ref } from 'vue'
@@ -475,8 +475,6 @@ const showMoveDialog = async () => {
 }
 
 const moveImages = (targetFolder: string, images: ImgItem[]) => {
-  // 这里需要调用后端API来移动图片
-  // 由于当前后端可能没有移动API，我们先显示一个提示
   ElMessageBox.confirm(
     `确定要将 ${images.length} 张图片移动到 "${targetFolder === '/' ? '根目录' : targetFolder.replace('/', '')}" 吗？`,
     '移动确认',
@@ -487,15 +485,28 @@ const moveImages = (targetFolder: string, images: ImgItem[]) => {
       customClass: 'cyber-message-box'
     }
   ).then(() => {
-    // 模拟移动操作
-    ElMessage.success(`🎉 成功移动 ${images.length} 张图片到目标文件夹`)
+    loading.value = true
     
-    // 清除选择状态
-    uploadedImages.value.forEach(img => img.isSelected = false)
-    selectedFolders.value = []
-    
-    // 刷新图片列表
-    listImages()
+    // 调用真实的移动API
+    const keys = images.map(img => img.key)
+    requestMoveImages({
+      keys: keys,
+      targetFolder: targetFolder
+    }).then((movedKeys) => {
+      ElMessage.success(`🎉 成功移动 ${movedKeys.length} 张图片到目标文件夹`)
+      
+      // 清除选择状态
+      uploadedImages.value.forEach(img => img.isSelected = false)
+      selectedFolders.value = []
+      
+      // 刷新图片列表
+      listImages()
+    }).catch((error) => {
+      console.error('Move failed:', error)
+      ElMessage.error(`移动失败: ${error}`)
+    }).finally(() => {
+      loading.value = false
+    })
   }).catch(() => {})
 }
 </script>
