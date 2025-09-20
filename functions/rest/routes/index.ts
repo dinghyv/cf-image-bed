@@ -168,6 +168,43 @@ router.post('/list', auth, async (req: Request, env: Env) => {
         })
     }
     
+    // 如果没有找到任何delimitedPrefixes，尝试从对象中提取文件夹信息
+    if (filteredPrefixes.length === 0) {
+        console.log('No delimitedPrefixes found, extracting from objects...')
+        const folderSet = new Set<string>()
+        
+        // 从所有对象中提取文件夹路径
+        list.objects.forEach(obj => {
+            // 获取对象所在的文件夹路径
+            const lastSlashIndex = obj.key.lastIndexOf('/')
+            if (lastSlashIndex > 0) {
+                const folderPath = obj.key.substring(0, lastSlashIndex + 1)
+                
+                if (include) {
+                    // 如果在子文件夹中，只处理当前文件夹的子文件夹
+                    if (folderPath.startsWith(include)) {
+                        const relativePath = folderPath.substring(include.length)
+                        const cleanRelativePath = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
+                        const isDirectSubfolder = cleanRelativePath && !cleanRelativePath.includes('/')
+                        
+                        if (isDirectSubfolder) {
+                            folderSet.add(folderPath)
+                        }
+                    }
+                } else {
+                    // 在根目录中，提取所有直接子文件夹
+                    const pathParts = folderPath.split('/')
+                    if (pathParts.length === 2 && pathParts[0] === '') { // 直接子文件夹
+                        folderSet.add(folderPath)
+                    }
+                }
+            }
+        })
+        
+        filteredPrefixes = Array.from(folderSet).sort()
+        console.log('Extracted folders from objects:', filteredPrefixes)
+    }
+    
     console.log('Filtered prefixes:', filteredPrefixes)
     console.log('Returning - images:', urls.length, 'prefixes:', filteredPrefixes.length)
     
@@ -234,6 +271,20 @@ router.post('/folders', auth, async (req: Request, env: Env) => {
                 prefix.endsWith('/') ? prefix : prefix + '/'
             )
             allFolders.push(...folders)
+        } else {
+            // 如果没有delimitedPrefixes，从对象中提取文件夹信息
+            const folderSet = new Set<string>()
+            
+            list.objects.forEach(obj => {
+                const lastSlashIndex = obj.key.lastIndexOf('/')
+                if (lastSlashIndex > 0) {
+                    const folderPath = obj.key.substring(0, lastSlashIndex + 1)
+                    folderSet.add(folderPath)
+                }
+            })
+            
+            const folders = Array.from(folderSet).sort()
+            allFolders.push(...folders)
         }
         
         return json(Ok(allFolders))
@@ -261,10 +312,10 @@ router.post("/folder", auth, async (req: Request, env: Env) => {
         
         console.log('Creating folder with path:', folderPath)
         
-        // 创建一个有内容的文件夹标记文件，避免显示为"此对象未命名"
-        await env.R2.put(folderPath, new TextEncoder().encode(''), {
+        // 创建一个有内容的文件夹标记文件，确保R2能识别为文件夹前缀
+        await env.R2.put(folderPath, new TextEncoder().encode('folder'), {
             httpMetadata: {
-                contentType: 'application/x-directory'
+                contentType: 'text/plain'
             }
         })
         
