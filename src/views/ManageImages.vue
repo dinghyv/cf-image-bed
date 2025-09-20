@@ -223,7 +223,14 @@ const addFolder = () => {
     }).then((res) => {
       console.log(res)
       ElMessage.success('🎉 文件夹创建成功')
+      
+      // 立即刷新一次
       listImages()
+      
+      // 由于R2的最终一致性，延迟再次刷新以确保新文件夹显示
+      setTimeout(() => {
+        listImages()
+      }, 1000)
     }).catch(() => {
       ElMessage.error('❌ 文件夹创建失败')
     }).finally(() => {
@@ -286,7 +293,7 @@ const listImages = () => {
         prefixes.value = [...navigationOptions, ...subFolders]
       }
     } else {
-      // 如果没有子文件夹
+      // 如果没有子文件夹，仍然显示导航选项
       if (delimiter.value !== '/') {
         const parentPath = getParentPath(delimiter.value)
         const navigationOptions = [parentPath]
@@ -298,6 +305,9 @@ const listImages = () => {
         prefixes.value = ['/']
       }
     }
+    
+    // 调试信息：输出最终的文件夹列表
+    console.log('Final prefixes for display:', prefixes.value)
   }).catch(() => {})
 		.finally(() => {
 			loading.value = false

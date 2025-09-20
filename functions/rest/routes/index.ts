@@ -78,7 +78,9 @@ router.post('/list', auth, async (req: Request, env: Env) => {
     if (data.delimiter != "/") {
         include = data.delimiter
     }
-    // console.log(include)
+    
+    console.log('List request - delimiter:', data.delimiter, 'include:', include)
+    
     const options = <R2ListOptions>{
         limit: data.limit,
         cursor: data.cursor,
@@ -86,7 +88,9 @@ router.post('/list', auth, async (req: Request, env: Env) => {
         prefix: include
     }
     const list = await env.R2.list(options)
-    // console.log(list)
+    
+    console.log('R2 list result - objects count:', list.objects.length, 'prefixes:', list.delimitedPrefixes)
+    
     const truncated = list.truncated ? list.truncated : false
     const cursor = list.cursor
     const objs = list.objects
@@ -101,6 +105,9 @@ router.post('/list', auth, async (req: Request, env: Env) => {
             size: it.size
         }
     })
+    
+    console.log('Returning - images:', urls.length, 'prefixes:', list.delimitedPrefixes?.length || 0)
+    
     return json(Ok(<ImgList>{
         list: urls,
         next: truncated,
@@ -189,14 +196,19 @@ router.post("/folder", auth, async (req: Request, env: Env) => {
             folderPath = parentPath + '/' + folderPath
         }
         
+        console.log('Creating folder with path:', folderPath)
+        
         // 创建一个有内容的文件夹标记文件，避免显示为"此对象未命名"
         await env.R2.put(folderPath, new TextEncoder().encode(''), {
             httpMetadata: {
                 contentType: 'application/x-directory'
             }
         })
+        
+        console.log('Folder created successfully:', folderPath)
         return json(Ok("Success"))
     } catch (e) {
+        console.error('Failed to create folder:', e)
         return json(Fail("Create folder fail"))
     }
 })
