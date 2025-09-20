@@ -462,23 +462,36 @@ body::after {
 :deep(.el-message-box),
 :deep(.cyber-message-box) {
 	background: var(--cyber-bg-card) !important;
-	border: 1px solid var(--cyber-border) !important;
-	border-radius: 12px !important;
-	box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8) !important;
+	border: none !important;
+	border-radius: 16px !important;
+	box-shadow: 
+		0 0 0 1px rgba(0, 255, 136, 0.3),
+		0 8px 40px rgba(0, 0, 0, 0.9),
+		0 0 60px rgba(0, 255, 136, 0.1) !important;
 	position: relative !important;
 	overflow: hidden !important;
 	color: var(--cyber-text) !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
 /* 强制覆盖Element Plus的弹窗遮罩 */
 .el-overlay {
-	background-color: rgba(0, 0, 0, 0.8) !important;
-	backdrop-filter: blur(4px) !important;
+	background-color: rgba(0, 0, 0, 0.85) !important;
+	backdrop-filter: blur(8px) !important;
 }
 
 /* 强制覆盖Element Plus的弹窗容器 */
 .el-message-box__wrapper {
 	background-color: transparent !important;
+	padding: 20px !important;
+}
+
+/* 移除所有默认边框和背景 */
+.el-message-box__wrapper .el-message-box {
+	border: none !important;
+	background: transparent !important;
+	box-shadow: none !important;
 }
 
 :deep(.cyber-message-box::before) {
@@ -487,10 +500,15 @@ body::after {
 	top: 0;
 	left: 0;
 	right: 0;
-	height: 2px;
-	background: linear-gradient(90deg, var(--cyber-primary), var(--cyber-secondary), var(--cyber-accent));
-	z-index: 1;
+	height: 3px;
+	background: linear-gradient(90deg, 
+		var(--cyber-primary), 
+		var(--cyber-secondary), 
+		var(--cyber-accent),
+		var(--cyber-primary));
+	z-index: 10;
 	animation: cyberBorderFlow 3s ease-in-out infinite;
+	border-radius: 16px 16px 0 0;
 }
 
 :deep(.cyber-message-box::after) {
@@ -500,16 +518,13 @@ body::after {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	border: 1px solid transparent;
-	border-radius: 12px;
-	background: linear-gradient(45deg, var(--cyber-primary), var(--cyber-secondary), var(--cyber-accent), var(--cyber-primary)) border-box;
-	-webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-	-webkit-mask-composite: exclude;
-	mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-	mask-composite: exclude;
-	z-index: 0;
-	opacity: 0.3;
-	animation: cyberGlow 2s ease-in-out infinite alternate;
+	border-radius: 16px;
+	background: linear-gradient(135deg, 
+		rgba(0, 255, 136, 0.1), 
+		rgba(255, 0, 128, 0.05), 
+		rgba(0, 212, 255, 0.1));
+	z-index: 1;
+	pointer-events: none;
 }
 
 @keyframes cyberGlow {
@@ -524,9 +539,11 @@ body::after {
 }
 
 :deep(.el-message-box__header) {
-	background: var(--cyber-bg-dark) !important;
-	border-bottom: 1px solid var(--cyber-border) !important;
-	padding: 20px 24px !important;
+	background: linear-gradient(135deg, var(--cyber-bg-dark), var(--cyber-bg-card)) !important;
+	border-bottom: 1px solid rgba(0, 255, 136, 0.2) !important;
+	padding: 24px 28px 20px 28px !important;
+	position: relative !important;
+	z-index: 5 !important;
 }
 
 :deep(.el-message-box__title) {
@@ -561,12 +578,12 @@ body::after {
 
 /* 新建文件夹弹窗特殊样式 */
 :deep(.cyber-folder-dialog) {
-	background: linear-gradient(135deg, var(--cyber-bg-card), var(--cyber-bg-dark)) !important;
-	border: 2px solid var(--cyber-primary) !important;
+	background: var(--cyber-bg-card) !important;
+	border: none !important;
 	box-shadow: 
-		0 0 30px rgba(0, 255, 136, 0.4),
-		0 0 60px rgba(0, 255, 136, 0.2),
-		inset 0 0 20px rgba(0, 255, 136, 0.1) !important;
+		0 0 0 1px rgba(0, 255, 136, 0.4),
+		0 8px 40px rgba(0, 0, 0, 0.9),
+		0 0 60px rgba(0, 255, 136, 0.2) !important;
 }
 
 :deep(.cyber-folder-dialog::before) {
@@ -645,12 +662,12 @@ body::after {
 
 /* 导出选择弹窗样式 */
 :deep(.cyber-export-dialog-box) {
-	background: linear-gradient(135deg, var(--cyber-bg-card), var(--cyber-bg-dark)) !important;
-	border: 2px solid var(--cyber-accent) !important;
+	background: var(--cyber-bg-card) !important;
+	border: none !important;
 	box-shadow: 
-		0 0 30px rgba(0, 212, 255, 0.4),
-		0 0 60px rgba(0, 212, 255, 0.2),
-		inset 0 0 20px rgba(0, 212, 255, 0.1) !important;
+		0 0 0 1px rgba(0, 212, 255, 0.4),
+		0 8px 40px rgba(0, 0, 0, 0.9),
+		0 0 60px rgba(0, 212, 255, 0.2) !important;
 }
 
 :deep(.cyber-export-dialog-box::before) {
@@ -665,12 +682,12 @@ body::after {
 
 /* 删除确认弹窗样式 */
 :deep(.cyber-delete-dialog-box) {
-	background: linear-gradient(135deg, var(--cyber-bg-card), var(--cyber-bg-dark)) !important;
-	border: 2px solid var(--cyber-secondary) !important;
+	background: var(--cyber-bg-card) !important;
+	border: none !important;
 	box-shadow: 
-		0 0 30px rgba(255, 0, 128, 0.4),
-		0 0 60px rgba(255, 0, 128, 0.2),
-		inset 0 0 20px rgba(255, 0, 128, 0.1) !important;
+		0 0 0 1px rgba(255, 0, 128, 0.4),
+		0 8px 40px rgba(0, 0, 0, 0.9),
+		0 0 60px rgba(255, 0, 128, 0.2) !important;
 }
 
 :deep(.cyber-delete-dialog-box::before) {
@@ -685,12 +702,12 @@ body::after {
 
 /* 导出结果弹窗样式 */
 :deep(.cyber-result-dialog-box) {
-	background: linear-gradient(135deg, var(--cyber-bg-card), var(--cyber-bg-dark)) !important;
-	border: 2px solid var(--cyber-primary) !important;
+	background: var(--cyber-bg-card) !important;
+	border: none !important;
 	box-shadow: 
-		0 0 30px rgba(0, 255, 136, 0.4),
-		0 0 60px rgba(0, 255, 136, 0.2),
-		inset 0 0 20px rgba(0, 255, 136, 0.1) !important;
+		0 0 0 1px rgba(0, 255, 136, 0.4),
+		0 8px 40px rgba(0, 0, 0, 0.9),
+		0 0 60px rgba(0, 255, 136, 0.2) !important;
 }
 
 :deep(.cyber-result-dialog-box::before) {
@@ -738,7 +755,9 @@ body::after {
 
 :deep(.el-message-box__content) {
 	background: var(--cyber-bg-card) !important;
-	padding: 24px !important;
+	padding: 28px !important;
+	position: relative !important;
+	z-index: 5 !important;
 }
 
 :deep(.el-message-box__message) {
@@ -789,9 +808,12 @@ body::after {
 }
 
 :deep(.el-message-box__btns) {
-	background: var(--cyber-bg-dark) !important;
-	border-top: 1px solid var(--cyber-border) !important;
-	padding: 16px 24px !important;
+	background: linear-gradient(135deg, var(--cyber-bg-card), var(--cyber-bg-dark)) !important;
+	border-top: 1px solid rgba(0, 255, 136, 0.2) !important;
+	padding: 20px 28px !important;
+	position: relative !important;
+	z-index: 5 !important;
+	border-radius: 0 0 16px 16px !important;
 }
 
 :deep(.el-message-box__btns .el-button) {
@@ -829,6 +851,20 @@ body::after {
 .el-message-box,
 .el-message-box * {
 	color: var(--cyber-text) !important;
+}
+
+/* 彻底移除所有可能的白色边框 */
+.el-message-box,
+.el-message-box__wrapper,
+.el-message-box__wrapper * {
+	border: none !important;
+	background: transparent !important;
+}
+
+.el-message-box__wrapper .el-message-box {
+	background: var(--cyber-bg-card) !important;
+	border: none !important;
+	box-shadow: none !important;
 }
 
 .el-message-box__header {
