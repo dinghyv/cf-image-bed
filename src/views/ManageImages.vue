@@ -239,6 +239,10 @@ const listImages = () => {
   }).then((data) => {
     uploadedImages.value = data.list
     
+    // 调试信息
+    console.log('Current delimiter:', delimiter.value)
+    console.log('Raw prefixes from API:', data.prefixes)
+    
     // 处理文件夹列表
     if (data.prefixes && data.prefixes.length) {
       if (delimiter.value === '/') {
@@ -249,10 +253,29 @@ const listImages = () => {
         const currentPrefix = delimiter.value.replace('/', '')
         const subFolders = data.prefixes.filter(prefix => {
           const prefixPath = prefix.replace('/', '')
+          console.log('Checking prefix:', prefix, 'prefixPath:', prefixPath, 'currentPrefix:', currentPrefix)
+          
           // 只显示直接子文件夹
-          return prefixPath.startsWith(currentPrefix) && 
-                 prefixPath.substring(currentPrefix.length).split('/').length === 2
+          if (!prefixPath.startsWith(currentPrefix)) {
+            console.log('Prefix does not start with current prefix, skipping')
+            return false
+          }
+          
+          // 获取相对于当前文件夹的路径
+          const relativePath = prefixPath.substring(currentPrefix.length)
+          // 移除开头的斜杠
+          const cleanRelativePath = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
+          
+          console.log('relativePath:', relativePath, 'cleanRelativePath:', cleanRelativePath)
+          
+          // 直接子文件夹应该只有一层，即 cleanRelativePath 不包含斜杠
+          const isDirectSubfolder = cleanRelativePath && !cleanRelativePath.includes('/')
+          console.log('Is direct subfolder:', isDirectSubfolder)
+          
+          return isDirectSubfolder
         })
+        
+        console.log('Filtered subFolders:', subFolders)
         
         // 添加父目录和根目录选项
         const parentPath = getParentPath(delimiter.value)

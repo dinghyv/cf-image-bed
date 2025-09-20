@@ -189,7 +189,12 @@ router.post("/folder", auth, async (req: Request, env: Env) => {
             folderPath = parentPath + '/' + folderPath
         }
         
-        await env.R2.put(folderPath, null)
+        // 创建一个有内容的文件夹标记文件，避免显示为"此对象未命名"
+        await env.R2.put(folderPath, new TextEncoder().encode(''), {
+            httpMetadata: {
+                contentType: 'application/x-directory'
+            }
+        })
         return json(Ok("Success"))
     } catch (e) {
         return json(Fail("Create folder fail"))
@@ -296,6 +301,12 @@ router.get('/del/:id+', async (req: Request, env: Env) => {
     if (!key) {
         return json(Fail("not delete key"))
     }
+    
+    // 防止删除文件夹标记文件
+    if (key.endsWith('/')) {
+        return json(Fail("Cannot delete folder marker"))
+    }
+    
     try {
         await env.R2.delete(key)
     } catch (e) {
@@ -316,7 +327,10 @@ router.delete("/", auth, async (req: Request, env: Env) => {
     try {
         for (let it of arr) {
             if (it && it.length) {
-                await env.R2.delete(it)
+                // 防止删除文件夹标记文件
+                if (!it.endsWith('/')) {
+                    await env.R2.delete(it)
+                }
             }
         }
     } catch (e) {
