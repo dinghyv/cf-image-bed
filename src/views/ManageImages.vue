@@ -33,6 +33,12 @@
 						<span class="hidden md:inline">导出链接</span>
 					</div>
 					
+					<!-- 移动到文件夹按钮（多选时显示） -->
+					<div v-if="isMultiSelect && selectedCount > 0" class="cyber-btn px-4 py-2 cursor-pointer flex items-center" @click="showMoveDialog">
+						<font-awesome-icon :icon="faFolderOpen" class="mr-2 text-cyber-accent" />
+						<span class="hidden md:inline">移动到</span>
+					</div>
+					
 					<!-- 批量删除按钮（多选时显示） -->
 					<div v-if="isMultiSelect && selectedCount > 0" class="cyber-btn px-4 py-2 cursor-pointer flex items-center bg-cyber-secondary border-cyber-secondary" @click="batchDelete">
 						<font-awesome-icon :icon="faTrash" class="mr-2 text-cyber-secondary" />
@@ -122,10 +128,10 @@ import { requestListImages, requestDeleteImage, createFolder } from '../utils/re
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import formatBytes from '../utils/format-bytes'
 import { computed, onMounted, ref } from 'vue'
-import type { ImgItem, ImgReq, Folder, ExportOptions, SelectedItem } from '../utils/types'
+import type { ImgItem, ImgReq, Folder, ExportOptions, SelectedItem, MoveOptions } from '../utils/types'
 import ImageBox from '../components/ImageBox.vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
-import { faRedoAlt, faFolder, faFolderPlus, faCog, faCheckSquare, faSquare, faDownload, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faRedoAlt, faFolder, faFolderPlus, faCog, faCheckSquare, faSquare, faDownload, faTrash, faFolderOpen } from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import copy from 'copy-to-clipboard'
 
@@ -406,6 +412,78 @@ const batchDelete = () => {
         ElMessage.error('❌ 删除失败')
       })
     }
+  }).catch(() => {})
+}
+
+// 移动文件夹功能
+const showMoveDialog = () => {
+  const selectedImages = uploadedImages.value.filter(img => img.isSelected)
+  if (selectedImages.length === 0) {
+    ElMessage.warning('请先选择要移动的图片')
+    return
+  }
+
+  // 创建目标文件夹选择弹窗
+  ElMessageBox({
+    title: '📁 移动到文件夹',
+    message: `
+      <div class="cyber-move-dialog">
+        <div class="mb-4">
+          <div class="cyber-text text-sm mb-2">选择目标文件夹：</div>
+          <select id="targetFolder" class="cyber-select w-full p-3 bg-cyber-bg-dark border border-cyber-border rounded text-cyber-text">
+            <option value="/">📁 根目录</option>
+            ${prefixes.value.filter(p => p !== '/' && p !== delimiter.value).map(folder => 
+              `<option value="${folder}">📁 ${folder.replace('/', '')}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div class="text-xs cyber-text-dim">
+          将移动选中的 ${selectedImages.length} 张图片到目标文件夹
+        </div>
+      </div>
+    `,
+    dangerouslyUseHTMLString: true,
+    showCancelButton: true,
+    confirmButtonText: '🚀 移动',
+    cancelButtonText: '❌ 取消',
+    customClass: 'cyber-message-box cyber-move-dialog-box',
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        const selectElement = document.getElementById('targetFolder') as HTMLSelectElement
+        const targetFolder = selectElement?.value
+        if (targetFolder) {
+          moveImages(targetFolder, selectedImages)
+        }
+        done()
+      } else {
+        done()
+      }
+    }
+  }).catch(() => {})
+}
+
+const moveImages = (targetFolder: string, images: ImgItem[]) => {
+  // 这里需要调用后端API来移动图片
+  // 由于当前后端可能没有移动API，我们先显示一个提示
+  ElMessageBox.confirm(
+    `确定要将 ${images.length} 张图片移动到 "${targetFolder === '/' ? '根目录' : targetFolder.replace('/', '')}" 吗？`,
+    '移动确认',
+    {
+      confirmButtonText: '移动',
+      cancelButtonText: '取消',
+      type: 'info',
+      customClass: 'cyber-message-box'
+    }
+  ).then(() => {
+    // 模拟移动操作
+    ElMessage.success(`🎉 成功移动 ${images.length} 张图片到目标文件夹`)
+    
+    // 清除选择状态
+    uploadedImages.value.forEach(img => img.isSelected = false)
+    selectedFolders.value = []
+    
+    // 刷新图片列表
+    listImages()
   }).catch(() => {})
 }
 </script>

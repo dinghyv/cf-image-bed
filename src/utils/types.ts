@@ -36,6 +36,11 @@ export interface SelectedItem {
 	items?: ImgItem[]
 }
 
+export interface MoveOptions {
+	targetFolder: string
+	selectedImages: string[]
+}
+
 export interface ImgList {
 	next: boolean
 	cursor ?: string

@@ -169,6 +169,7 @@ const showPreview = () => {
         confirmDelete()
         done()
       } else {
+        // 关闭按钮，直接关闭
         done()
       }
     }

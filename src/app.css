@@ -769,6 +769,26 @@ body::after {
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
 }
 
+/* 移动文件夹弹窗样式 */
+:deep(.cyber-move-dialog-box) {
+	background: var(--cyber-bg-card) !important;
+	border: none !important;
+	box-shadow: 
+		0 0 0 1px rgba(0, 212, 255, 0.4),
+		0 8px 40px rgba(0, 0, 0, 0.9),
+		0 0 60px rgba(0, 212, 255, 0.2) !important;
+}
+
+:deep(.cyber-move-dialog-box::before) {
+	height: 3px !important;
+	background: linear-gradient(90deg, 
+		var(--cyber-accent), 
+		var(--cyber-primary), 
+		var(--cyber-secondary),
+		var(--cyber-accent)) !important;
+	animation: cyberBorderFlow 2s linear infinite !important;
+}
+
 /* 自定义选择框样式 */
 .cyber-select {
 	background: var(--cyber-bg-dark) !important;
