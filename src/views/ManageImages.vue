@@ -2,46 +2,73 @@
 	<div class="mx-auto max-w-6xl my-4 px-4 relative">
 		<loading-overlay :loading="loading" />
 
-		<div class="flex items-center justify-between mb-4">
-			<div>
-				<div class="text-gray-800 text-lg">管理图片</div>
-				<div class="text-sm text-gray-500">
-					已上传 {{ uploadedImages.length }} 张图片，共 {{ formatBytes(imagesTotalSize) }}
+		<!-- 页面标题和控制区域 -->
+		<div class="cyber-card p-6 mb-6">
+			<div class="flex items-center justify-between mb-4">
+				<div>
+					<div class="cyber-text text-2xl font-bold mb-2 flex items-center">
+						<font-awesome-icon :icon="faCog" class="mr-3 text-cyber-primary" />
+						图片管理中心
+					</div>
+					<div class="cyber-text-dim text-sm">
+						已上传 <span class="text-cyber-primary font-bold">{{ uploadedImages.length }}</span> 张图片，
+						共 <span class="text-cyber-accent font-bold">{{ formatBytes(imagesTotalSize) }}</span>
+					</div>
+				</div>
+				
+				<!-- 操作按钮 -->
+				<div class="flex items-center space-x-3">
+					<div class="cyber-btn px-4 py-2 cursor-pointer flex items-center" @click="addFolder">
+						<font-awesome-icon :icon="faFolderPlus" class="mr-2 text-cyber-accent" />
+						<span class="hidden md:inline">新建文件夹</span>
+					</div>
+					<div class="cyber-btn px-4 py-2 cursor-pointer flex items-center" @click="listImages">
+						<font-awesome-icon :icon="faRedoAlt" class="mr-2 text-cyber-primary" />
+						<span class="hidden md:inline">刷新</span>
+					</div>
 				</div>
 			</div>
-      <div class="flex items-center justify-start">
-        <font-awesome-icon :icon="faFolderPlus" class="text-xl cursor-pointer text-3xl text-amber-300 mr-2" @click="addFolder" />
-        <font-awesome-icon
-            :icon="faRedoAlt"
-            class="text-xl cursor-pointer text-indigo-400"
-            @click="listImages"
-        />
-      </div>
+
+			<!-- 文件夹导航 -->
+			<div class="flex items-center justify-start flex-wrap gap-2">
+				<div v-for="it in prefixes" 
+					 :key="it"
+					 :class="{
+						'cyber-folder active': delimiter === it,
+						'cyber-folder': delimiter !== it
+					 }"
+					 @click="changeFolder(it)">
+					<font-awesome-icon :icon="faFolder" class="text-2xl mr-2" />
+					<span v-if="it !== '/'" class="cyber-text">{{ it.replace("/", "") }}</span>
+					<span v-else class="cyber-text">根目录</span>
+				</div>
+			</div>
 		</div>
-    <div class="my-2 flex items-center justify-start flex-wrap">
-      <div v-for="it in prefixes" class="px-4 py-2 items-center flex rounded-lg bg-white shadow-md cursor-pointer mx-1" @click="changeFolder(it)">
-        <font-awesome-icon :icon="faFolder" class="text-3xl text-amber-500" />
-        <span v-if="it !== '/'" class="pl-2 text-gray-600"> {{ it.replace("/", "") }}</span>
-        <span v-else class="pl-2 text-gray-600"> {{ it }}</span>
-      </div>
-    </div>
-		<div class="grid gap-2 lg:gap-4 lg:grid-cols-4 grid-cols-2">
-			<transition-group name="el-fade-in-linear">
-				<div
-					class="col-span-1 md:col-span-1"
-					v-for="item in uploadedImages"
-					:key="item.url"
-				>
+
+		<!-- 图片网格 -->
+		<div class="cyber-grid">
+			<transition-group name="cyber-fade" tag="div" class="contents">
+				<div v-for="item in uploadedImages" :key="item.url">
 					<image-box
 						:src="item.url"
-            :copyUrl="item.copyUrl"
+						:copyUrl="item.copyUrl"
 						:name="item.key"
-            :size="item.size"
+						:size="item.size"
 						@delete="deleteImage(item.key)"
 						mode="uploaded"
 					/>
 				</div>
 			</transition-group>
+		</div>
+
+		<!-- 空状态 -->
+		<div v-if="uploadedImages.length === 0 && !loading" 
+			 class="text-center py-16">
+			<div class="cyber-text-dim">
+				<font-awesome-icon :icon="faFolder" class="text-6xl mb-4 text-cyber-primary opacity-50" />
+				<div class="text-lg mb-2">暂无图片</div>
+				<div class="text-sm">当前文件夹为空，请上传图片或切换到其他文件夹</div>
+			</div>
 		</div>
 	</div>
 </template>
@@ -54,7 +81,7 @@ import { computed, onMounted, ref } from 'vue'
 import type { ImgItem, ImgReq, Folder } from '../utils/types'
 import ImageBox from '../components/ImageBox.vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
-import { faRedoAlt, faFolder, faFolderPlus } from '@fortawesome/free-solid-svg-icons'
+import { faRedoAlt, faFolder, faFolderPlus, faCog } from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const loading = ref(false)

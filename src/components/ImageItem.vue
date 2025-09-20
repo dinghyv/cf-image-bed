@@ -1,45 +1,97 @@
 <template>
-  <el-card class="box-card mt-4" v-for="it in imageList" :key="it.key">
-    <template #header>
-      <div class="card-header">
-        <span>{{ it.filename }}</span>
+  <div class="space-y-4">
+    <div class="cyber-card p-6" v-for="it in imageList" :key="it.key">
+      <!-- 卡片头部 -->
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-cyber-border">
+        <div class="flex items-center">
+          <font-awesome-icon :icon="faImage" class="text-cyber-primary mr-3" />
+          <span class="cyber-text text-lg font-bold">{{ it.filename }}</span>
+        </div>
+        <div class="text-cyber-accent text-sm font-mono">
+          已上传
+        </div>
       </div>
-    </template>
-    <div class="text item">
-      <div class="lg:flex items-center justify-start">
-        <el-image
-            class="block w-48 h-48 lg:mr-6 mb-2 lg:mb-0 mx-auto"
-            :src="it.url"
-            fit="cover"
-            hide-on-click-modal
-            lazy
-            @error="imageError = true"
-            @load="loading = false"
-            :preview-src-list="[it.url]"
-        />
-        <div class="link-list">
-          <div class="w-full mb-2">
-            <label for="htmlLink" class="block text-sm font-medium text-gray-700"> HTML </label>
-            <div class="mt-1">
-              <input id="htmlLink" :value="htmlLink(it.copyUrl, it.filename)" name="htmlLink" class="cursor-pointer focus:node border border-gray-300 flex-1 block w-full rounded-md px-2 py-1" readonly placeholder="html link" @click="copyLink" />
+
+      <!-- 内容区域 -->
+      <div class="lg:flex items-start justify-start gap-6">
+        <!-- 图片预览 -->
+        <div class="flex-shrink-0">
+          <el-image
+              class="block w-48 h-48 rounded-lg overflow-hidden border border-cyber-border hover:border-cyber-primary transition-colors"
+              :src="it.url"
+              fit="cover"
+              hide-on-click-modal
+              lazy
+              @error="imageError = true"
+              @load="loading = false"
+              :preview-src-list="[it.url]"
+          />
+        </div>
+
+        <!-- 链接列表 -->
+        <div class="flex-1 min-w-0">
+          <div class="space-y-4">
+            <!-- HTML链接 -->
+            <div class="w-full">
+              <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
+                <font-awesome-icon :icon="faCode" class="mr-2 text-cyber-accent" />
+                HTML
+              </label>
+              <div class="relative">
+                <input 
+                  :value="htmlLink(it.copyUrl, it.filename)" 
+                  class="cyber-input w-full cursor-pointer pr-10" 
+                  readonly 
+                  @click="copyLink" 
+                />
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-primary">
+                  <font-awesome-icon :icon="faCopy" />
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="w-full mb-2">
-            <label for="Markdown" class="block text-sm font-medium text-gray-700"> Markdown </label>
-            <div class="mt-1">
-              <input id="Markdown" :value="markdownLink(it.copyUrl, it.filename)" name="Markdown" class="cursor-pointer focus:none border border-gray-300 flex-1 block w-full rounded-md px-2 py-1" readonly placeholder="markdown link" @click="copyLink" />
+
+            <!-- Markdown链接 -->
+            <div class="w-full">
+              <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
+                <font-awesome-icon :icon="faMarkdown" class="mr-2 text-cyber-secondary" />
+                Markdown
+              </label>
+              <div class="relative">
+                <input 
+                  :value="markdownLink(it.copyUrl, it.filename)" 
+                  class="cyber-input w-full cursor-pointer pr-10" 
+                  readonly 
+                  @click="copyLink" 
+                />
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-primary">
+                  <font-awesome-icon :icon="faCopy" />
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="w-full mb-2">
-            <label for="LINK" class="block text-sm font-medium text-gray-700"> LINK </label>
-            <div class="mt-1">
-              <input id="LINK" :value="it.copyUrl" name="LINK" class="cursor-pointer focus:none border border-gray-300 flex-1 block w-full rounded-md px-2 py-1" placeholder="link" @click="copyLink" readonly />
+
+            <!-- 直接链接 -->
+            <div class="w-full">
+              <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
+                <font-awesome-icon :icon="faLink" class="mr-2 text-cyber-primary" />
+                Direct Link
+              </label>
+              <div class="relative">
+                <input 
+                  :value="it.copyUrl" 
+                  class="cyber-input w-full cursor-pointer pr-10" 
+                  readonly 
+                  @click="copyLink" 
+                />
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-primary">
+                  <font-awesome-icon :icon="faCopy" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </el-card>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -47,6 +99,7 @@ import type { ImgItem } from '../utils/types'
 import copy from 'copy-to-clipboard'
 import { ElCard, ElImage, ElMessage } from 'element-plus'
 import { ref } from 'vue'
+import { faImage, faCode, faMarkdown, faLink, faCopy } from '@fortawesome/free-solid-svg-icons'
 const props = defineProps<{
   imageList: ImgItem[]
 }>()
@@ -71,12 +124,5 @@ const copyLink = (event: any) => {
 </script>
 
 <style scoped>
-.link-list {
-  width: calc(100% - 13.5rem);
-}
-@media screen and (max-width: 1024px){
-  .link-list {
-    width: 100%;
-  }
-}
+/* 移除原有的样式，使用新的赛博朋克样式 */
 </style>

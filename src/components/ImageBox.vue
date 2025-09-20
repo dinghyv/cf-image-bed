@@ -1,50 +1,60 @@
 <template>
-	<div
-		class="w-full bg-rose-100 rounded-md shadow-sm overflow-hidden relative"
-	>
+	<div class="cyber-card w-full overflow-hidden relative group">
 		<loading-overlay :loading="loading" />
 
-		<el-image
-			class="block w-full h-40 lg:h-60"
-			:src="src"
-			fit="cover"
-			hide-on-click-modal
-			@load="loading = false"
-		/>
-		<div class="w-full absolute left-0 bottom-0 bg-slate-800/70 backdrop-blur-sm">
-			<div class="p-2">
-				<div class="w-full flex items-center text-white">
+		<!-- 图片容器 -->
+		<div class="relative overflow-hidden">
+			<el-image
+				class="block w-full h-40 lg:h-60 transition-transform duration-300 group-hover:scale-105"
+				:src="src"
+				fit="cover"
+				hide-on-click-modal
+				@load="loading = false"
+			/>
+			
+			<!-- 悬停时的光效 -->
+			<div class="absolute inset-0 bg-gradient-to-t from-cyber-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+		</div>
+
+		<!-- 信息面板 -->
+		<div class="absolute left-0 bottom-0 w-full bg-gradient-to-t from-cyber-dark/90 to-transparent backdrop-blur-sm">
+			<div class="p-3">
+				<!-- 文件名 -->
+				<div class="w-full flex items-center cyber-text mb-2">
 					<div class="flex-1 w-full truncate">
 						<el-tooltip :content="name" placement="top-start">
-							{{ name }}
+							<span class="text-sm font-medium">{{ name }}</span>
 						</el-tooltip>
 					</div>
 					<div
 						v-if="mode === 'converted'"
-						class="w-6 h-6 flex items-center justify-center cursor-pointer"
+						class="w-6 h-6 flex items-center justify-center cursor-pointer text-cyber-secondary hover:text-cyber-primary transition-colors"
 						@click="emit('delete')"
 					>
 						<font-awesome-icon :icon="faTimesCircle" />
 					</div>
 				</div>
-				<span class="text-xs text-gray-300 flex items-center">
-					{{ formatBytes(size) }}
-					<el-divider v-if="uploadedAt" direction="vertical" />
-					<span v-if="uploadedAt">
+				
+				<!-- 文件信息 -->
+				<div class="cyber-text-dim text-xs flex items-center">
+					<span class="text-cyber-accent font-mono">{{ formatBytes(size) }}</span>
+					<el-divider v-if="uploadedAt" direction="vertical" class="mx-2" />
+					<span v-if="uploadedAt" class="font-mono">
 						{{ new Date(uploadedAt).toLocaleDateString() }}
 					</span>
-				</span>
+				</div>
 			</div>
-			<div v-if="mode === 'uploaded'">
-				<el-divider class="m-0" />
-				<div class="w-full flex text-white h-9 text-center text-sm">
+
+			<!-- 操作按钮 -->
+			<div v-if="mode === 'uploaded'" class="border-t border-cyber-border">
+				<div class="w-full flex cyber-text h-10 text-center text-sm">
 					<el-tooltip :content="copyUrl" placement="top-start">
 						<div
-							class="flex-1 flex items-center justify-center cursor-pointer"
+							class="flex-1 flex items-center justify-center cursor-pointer hover:bg-cyber-primary/20 transition-colors duration-200"
 							@click="copyLink(copyUrl)"
 						>
-							<font-awesome-icon :icon="faCopy" class="mr-2" />
-							链接
+							<font-awesome-icon :icon="faCopy" class="mr-2 text-cyber-accent" />
+							<span class="text-xs">链接</span>
 						</div>
 					</el-tooltip>
 					<el-divider direction="vertical" class="h-full" />
@@ -53,7 +63,6 @@
 						confirm-button-type="danger"
 						@confirm="
 							() => {
-								// (e: Event) => boolean ???
 								loading = true
 								emit('delete')
 								return true
@@ -61,15 +70,18 @@
 						"
 					>
 						<template #reference>
-							<div class="flex-1 flex items-center justify-center cursor-pointer">
-								<font-awesome-icon :icon="faTrashAlt" class="mr-2" />
-								删除
+							<div class="flex-1 flex items-center justify-center cursor-pointer hover:bg-cyber-secondary/20 transition-colors duration-200">
+								<font-awesome-icon :icon="faTrashAlt" class="mr-2 text-cyber-secondary" />
+								<span class="text-xs">删除</span>
 							</div>
 						</template>
 					</el-popconfirm>
 				</div>
 			</div>
 		</div>
+
+		<!-- 赛博朋克边框效果 -->
+		<div class="absolute inset-0 border border-cyber-border opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
 	</div>
 </template>
 

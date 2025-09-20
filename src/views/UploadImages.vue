@@ -1,23 +1,44 @@
 <template>
 	<div class="mx-auto max-w-6xl my-4 px-4">
-		<div class="text-gray-800 text-lg">上传图片</div>
-		<div class="mb-4 text-sm text-gray-500">
-			每张图片大小不超过 {{ formatBytes(imageSizeLimit) }}
+		<!-- 页面标题 -->
+		<div class="mb-6">
+			<div class="cyber-text text-2xl font-bold mb-2 flex items-center">
+				<font-awesome-icon :icon="faUpload" class="mr-3 text-cyber-primary" />
+				图片上传中心
+			</div>
+			<div class="cyber-text-dim text-sm">
+				每张图片大小不超过 {{ formatBytes(imageSizeLimit) }} | 支持拖拽、粘贴、选择文件
+			</div>
 		</div>
 
-		<div class="border-2 border-dashed border-slate-400 rounded-md relative">
+		<!-- 赛博朋克拖拽区域 -->
+		<div class="cyber-dropzone rounded-lg relative" :class="{ 'drag-over': isDragOver }">
 			<loading-overlay :loading="loading" />
 
-			<div class="grid p-4 gap-4 grid-cols-4 min-h-[240px]" @drop.prevent="onFileDrop" @dragover.prevent>
+			<div class="grid p-6 gap-4 grid-cols-4 min-h-[300px]" 
+				 @drop.prevent="onFileDrop" 
+				 @dragover.prevent="isDragOver = true"
+				 @dragleave="isDragOver = false">
+				
+				<!-- 空状态提示 -->
 				<div v-if="convertedImages.length === 0"
-					class="absolute -z-10 left-0 top-0 w-full h-full flex items-center justify-center">
-					<div class="text-gray-500">
-						<font-awesome-icon :icon="faCopy" />
-						粘贴或拖动图片至此处
+					class="absolute inset-0 flex items-center justify-center z-0">
+					<div class="text-center cyber-text-dim">
+						<div class="text-6xl mb-4 text-cyber-primary opacity-50">
+							<font-awesome-icon :icon="faCopy" />
+						</div>
+						<div class="text-lg mb-2">拖拽图片到此处</div>
+						<div class="text-sm">或使用下方按钮选择文件</div>
+						<div class="mt-4 text-xs cyber-text-dim">
+							<span class="inline-block px-2 py-1 bg-cyber-card border border-cyber-border rounded">
+								Ctrl+V 粘贴图片
+							</span>
+						</div>
 					</div>
 				</div>
 
-				<transition-group name="el-fade-in-linear">
+				<!-- 图片预览网格 -->
+				<transition-group name="cyber-fade" tag="div" class="contents">
 					<div class="col-span-3 md:col-span-1" v-for="item in convertedImages" :key="item.tmpSrc">
 						<image-box :src="item.tmpSrc" :size="item.file.size" :name="item.file.name"
 							@delete="removeImage(item.tmpSrc)" mode="converted" />
@@ -25,49 +46,67 @@
 				</transition-group>
 			</div>
 		</div>
-		<div class="w-full rounded-md shadow-sm overflow-hidden mt-4 grid grid-cols-8">
-			<div class="md:col-span-1 col-span-8">
-				<div class="w-full h-10 bg-blue-500 cursor-pointer flex items-center justify-center text-white" :class="{
-					'area-disabled': loading
-				}" @click="input?.click()">
-					<font-awesome-icon :icon="faImages" class="mr-2" />
-					选择图片
-				</div>
-			</div>
 
-			<div class="md:col-span-4 col-span-8">
-				<div class="w-full h-10 bg-slate-200 leading-10 px-4 text-center md:text-left">
-					已选择 {{ convertedImages.length }} 张，共 {{ formatBytes(imagesTotalSize) }}
+		<!-- 赛博朋克控制面板 -->
+		<div class="cyber-card mt-6 p-4">
+			<div class="grid grid-cols-1 md:grid-cols-8 gap-3">
+				<!-- 选择图片按钮 -->
+				<div class="md:col-span-1">
+					<div class="cyber-btn w-full h-12 cursor-pointer flex items-center justify-center" 
+						 :class="{ 'area-disabled': loading }" 
+						 @click="input?.click()">
+						<font-awesome-icon :icon="faImages" class="mr-2" />
+						<span class="hidden md:inline">选择</span>
+					</div>
 				</div>
-			</div>
 
-			<div class="md:col-span-1 col-span-3">
-				<div class="w-full bg-red-500 cursor-pointer h-10 flex items-center justify-center text-white" :class="{
-					'area-disabled': loading
-				}" @click="clearInput">
-					<font-awesome-icon :icon="faTrashAlt" class="mr-2" />
-					清除
+				<!-- 状态信息 -->
+				<div class="md:col-span-4">
+					<div class="cyber-input w-full h-12 flex items-center justify-center md:justify-start">
+						<span class="cyber-text">
+							已选择 <span class="text-cyber-primary font-bold">{{ convertedImages.length }}</span> 张，
+							共 <span class="text-cyber-accent font-bold">{{ formatBytes(imagesTotalSize) }}</span>
+						</span>
+					</div>
 				</div>
-			</div>
-			<div class="md:col-span-1 col-span-3">
-				<div class="w-full bg-sky-500  cursor-pointer h-10 flex items-center justify-center text-white" :class="{
-					'area-disabled': loading
-				}" @click="clipboardUpload">
-					<font-awesome-icon :icon="faTrashAlt" class="mr-2" />
-					上传剪切板
+
+				<!-- 清除按钮 -->
+				<div class="md:col-span-1">
+					<div class="cyber-btn w-full h-12 cursor-pointer flex items-center justify-center bg-cyber-secondary border-cyber-secondary" 
+						 :class="{ 'area-disabled': loading }" 
+						 @click="clearInput">
+						<font-awesome-icon :icon="faTrashAlt" class="mr-2" />
+						<span class="hidden md:inline">清除</span>
+					</div>
 				</div>
-			</div>
-			<div class="md:col-span-1 col-span-5">
-				<div class="w-full h-10 flex items-center justify-center text-white bg-green-500 cursor-pointer" :class="{
-					'area-disabled': convertedImages.length === 0 || loading
-				}" @click="uploadImages">
-					<font-awesome-icon :icon="faUpload" class="mr-2" />
-					上传
+
+				<!-- 剪切板按钮 -->
+				<div class="md:col-span-1">
+					<div class="cyber-btn w-full h-12 cursor-pointer flex items-center justify-center bg-cyber-accent border-cyber-accent" 
+						 :class="{ 'area-disabled': loading }" 
+						 @click="clipboardUpload">
+						<font-awesome-icon :icon="faCopy" class="mr-2" />
+						<span class="hidden md:inline">粘贴</span>
+					</div>
+				</div>
+
+				<!-- 上传按钮 -->
+				<div class="md:col-span-1">
+					<div class="cyber-btn w-full h-12 cursor-pointer flex items-center justify-center bg-cyber-primary border-cyber-primary text-cyber-dark font-bold" 
+						 :class="{ 'area-disabled': convertedImages.length === 0 || loading }" 
+						 @click="uploadImages">
+						<font-awesome-icon :icon="faUpload" class="mr-2" />
+						<span class="hidden md:inline">上传</span>
+					</div>
 				</div>
 			</div>
 		</div>
-		<result-list v-show="imgResultList && imgResultList.length" :image-list="imgResultList" ref="resultList"
-			class="mt-4" />
+
+		<!-- 结果列表 -->
+		<result-list v-show="imgResultList && imgResultList.length" 
+					 :image-list="imgResultList" 
+					 ref="resultList"
+					 class="mt-6" />
 	</div>
 
 	<input ref="input" type="file" accept="image/*" class="hidden" multiple @change="onInputChange" />
@@ -94,12 +133,14 @@ const imagesTotalSize = computed(() =>
 const imageSizeLimit = 20 * 1024 * 1024
 const input = ref<HTMLInputElement>()
 const loading = ref(false)
+const isDragOver = ref(false)
 const router = useRouter()
 
 const onInputChange = () => {
 	appendConvertedImages(input.value?.files)
 }
 const onFileDrop = (e: DragEvent) => {
+	isDragOver.value = false
 	appendConvertedImages(e.dataTransfer?.files)
 }
 const onPaste = (e: ClipboardEvent) => {
@@ -219,5 +260,25 @@ const uploadImages = () => {
 <style>
 .remove-now-btn .el-picker-panel__footer button:first-child {
 	display: none;
+}
+
+/* 赛博朋克淡入动画 */
+.cyber-fade-enter-active,
+.cyber-fade-leave-active {
+	transition: all 0.5s ease;
+}
+
+.cyber-fade-enter-from {
+	opacity: 0;
+	transform: translateY(20px) scale(0.9);
+}
+
+.cyber-fade-leave-to {
+	opacity: 0;
+	transform: translateY(-20px) scale(0.9);
+}
+
+.cyber-fade-move {
+	transition: transform 0.5s ease;
 }
 </style>

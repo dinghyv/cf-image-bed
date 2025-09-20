@@ -1,7 +1,7 @@
 import router from "./plugins/router"
 import storage from "./utils/storage";
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to: any, from: any, next: any) => {
     // console.log(to.path)
     const path = to.path
     const token = storage.local.get('auth-token')
