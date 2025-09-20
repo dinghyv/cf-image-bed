@@ -173,15 +173,61 @@ router.post('/folders', auth, async (req: Request, env: Env) => {
 // 创建目录
 router.post("/folder", auth, async (req: Request, env: Env) => {
     try {
-        const data = await req.json() as Folder
+        const data = await req.json() as Folder & { parentPath?: string }
         const regx = /^[0-9A-Za-z_-]+$/
         if (!regx.test(data.name)) {
             return json(Fail("Folder name error"))
         }
-        await env.R2.put(data.name + '/', null)
+        
+        // 构建完整的文件夹路径
+        let folderPath = data.name + '/'
+        if (data.parentPath && data.parentPath !== '/') {
+            // 移除父路径末尾的斜杠（如果有的话）
+            const parentPath = data.parentPath.endsWith('/') ? data.parentPath.slice(0, -1) : data.parentPath
+            folderPath = parentPath + '/' + folderPath
+        }
+        
+        await env.R2.put(folderPath, null)
         return json(Ok("Success"))
     } catch (e) {
         return json(Fail("Create folder fail"))
+    }
+})
+
+// 删除文件夹
+router.post("/folder/delete", auth, async (req: Request, env: Env) => {
+    try {
+        const data = await req.json() as { folderPath: string }
+        const { folderPath } = data
+        
+        if (!folderPath) {
+            return json(Fail("No folder path provided"))
+        }
+        
+        // 确保文件夹路径以 / 结尾
+        const normalizedPath = folderPath.endsWith('/') ? folderPath : folderPath + '/'
+        
+        // 列出文件夹中的所有文件
+        const listOptions = <R2ListOptions>{
+            prefix: normalizedPath,
+            limit: 1000
+        }
+        const list = await env.R2.list(listOptions)
+        
+        // 删除文件夹中的所有文件
+        const deletePromises = list.objects.map(obj => env.R2.delete(obj.key))
+        await Promise.all(deletePromises)
+        
+        // 删除文件夹标记（如果存在）
+        try {
+            await env.R2.delete(normalizedPath)
+        } catch (e) {
+            // 文件夹标记可能不存在，忽略错误
+        }
+        
+        return json(Ok(`Deleted ${list.objects.length} files from folder`))
+    } catch (e) {
+        return json(Fail("Delete folder fail"))
     }
 })
 

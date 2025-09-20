@@ -145,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { requestListImages, requestDeleteImage, createFolder, requestAllFolders, requestMoveImages, requestUploadImages } from '../utils/request'
+import { requestListImages, requestDeleteImage, createFolder, requestAllFolders, requestMoveImages, requestUploadImages, requestDeleteFolder } from '../utils/request'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import formatBytes from '../utils/format-bytes'
 import { computed, onMounted, ref } from 'vue'
@@ -197,8 +197,9 @@ const addFolder = () => {
     }
   }).then(({ value }) => {
     loading.value = true
-    createFolder(<Folder> {
-      name: value
+    createFolder(<Folder & { parentPath?: string }> {
+      name: value,
+      parentPath: delimiter.value
     }).then((res) => {
       console.log(res)
       ElMessage.success('🎉 文件夹创建成功')
@@ -371,73 +372,81 @@ const showExportDialog = () => {
   }).catch(() => {})
 }
 
-const exportLinks = (type: ExportOptions['type']) => {
-  const selectedItems = getSelectedItems()
-  let exportText = ''
-  
-  selectedItems.forEach(item => {
-    if (item.type === 'folder') {
-      exportText += `\n=== 文件夹: ${item.name} ===\n`
-    }
+const exportLinks = async (type: ExportOptions['type']) => {
+  try {
+    loading.value = true
+    const selectedItems = await getSelectedItems()
+    let exportText = ''
     
-    if (item.items) {
-      item.items.forEach(img => {
-        switch (type) {
-          case 'direct':
-            exportText += `${img.copyUrl}\n`
-            break
-          case 'webp':
-            exportText += `${img.webpUrl}\n`
-            break
-          case 'html-direct':
-            exportText += `<a href="${img.copyUrl}" target="_blank"><img src="${img.copyUrl}" alt="${img.filename || img.key}"></a>\n`
-            break
-          case 'html-webp':
-            exportText += `<a href="${img.webpUrl}" target="_blank"><img src="${img.webpUrl}" alt="${img.filename || img.key}"></a>\n`
-            break
-          case 'markdown-direct':
-            exportText += `![${img.filename || img.key}](${img.copyUrl})\n`
-            break
-          case 'markdown-webp':
-            exportText += `![${img.filename || img.key}](${img.webpUrl})\n`
-            break
-        }
-      })
-    }
-  })
-  
-  // 显示导出结果弹窗
-  ElMessageBox({
-    title: '📋 导出结果',
-    message: `
-      <div class="cyber-result-dialog">
-        <div class="mb-4">
-          <div class="cyber-text text-sm mb-2">导出内容预览：</div>
-          <div class="cyber-input p-4 max-h-80 overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" onclick="this.select()">${exportText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+    selectedItems.forEach(item => {
+      if (item.type === 'folder') {
+        exportText += `\n=== 文件夹: ${item.name} ===\n`
+      }
+      
+      if (item.items) {
+        item.items.forEach(img => {
+          switch (type) {
+            case 'direct':
+              exportText += `${img.copyUrl}\n`
+              break
+            case 'webp':
+              exportText += `${img.webpUrl}\n`
+              break
+            case 'html-direct':
+              exportText += `<a href="${img.copyUrl}" target="_blank"><img src="${img.copyUrl}" alt="${img.filename || img.key}"></a>\n`
+              break
+            case 'html-webp':
+              exportText += `<a href="${img.webpUrl}" target="_blank"><img src="${img.webpUrl}" alt="${img.filename || img.key}"></a>\n`
+              break
+            case 'markdown-direct':
+              exportText += `![${img.filename || img.key}](${img.copyUrl})\n`
+              break
+            case 'markdown-webp':
+              exportText += `![${img.filename || img.key}](${img.webpUrl})\n`
+              break
+          }
+        })
+      }
+    })
+    
+    // 显示导出结果弹窗
+    ElMessageBox({
+      title: '📋 导出结果',
+      message: `
+        <div class="cyber-result-dialog">
+          <div class="mb-4">
+            <div class="cyber-text text-sm mb-2">导出内容预览：</div>
+            <div class="cyber-input p-4 max-h-80 overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" onclick="this.select()">${exportText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+          </div>
+          <div class="text-xs cyber-text-dim">
+            点击上方文本框可全选内容，或点击下方按钮复制到剪贴板
+          </div>
         </div>
-        <div class="text-xs cyber-text-dim">
-          点击上方文本框可全选内容，或点击下方按钮复制到剪贴板
-        </div>
-      </div>
-    `,
-    dangerouslyUseHTMLString: true,
-    showCancelButton: true,
-    confirmButtonText: '📋 复制到剪贴板',
-    cancelButtonText: '❌ 关闭',
-    customClass: 'cyber-message-box cyber-result-dialog-box cyber-large-dialog',
-    showClose: true,
-    customStyle: {
-      width: '80%',
-      maxWidth: '800px',
-      minHeight: '400px'
-    }
-  }).then(() => {
-    copy(exportText)
-    ElMessage.success('🎉 链接已复制到剪贴板')
-  }).catch(() => {})
+      `,
+      dangerouslyUseHTMLString: true,
+      showCancelButton: true,
+      confirmButtonText: '📋 复制到剪贴板',
+      cancelButtonText: '❌ 关闭',
+      customClass: 'cyber-message-box cyber-result-dialog-box cyber-large-dialog',
+      showClose: true,
+      customStyle: {
+        width: '80%',
+        maxWidth: '800px',
+        minHeight: '400px'
+      }
+    }).then(() => {
+      copy(exportText)
+      ElMessage.success('🎉 链接已复制到剪贴板')
+    }).catch(() => {})
+  } catch (error) {
+    console.error('Export failed:', error)
+    ElMessage.error('导出失败，请重试')
+  } finally {
+    loading.value = false
+  }
 }
 
-const getSelectedItems = (): SelectedItem[] => {
+const getSelectedItems = async (): Promise<SelectedItem[]> => {
   const items: SelectedItem[] = []
   
   // 添加选中的图片
@@ -452,21 +461,37 @@ const getSelectedItems = (): SelectedItem[] => {
   }
   
   // 添加选中的文件夹
-  selectedFolders.value.forEach(folderPath => {
-    // 这里需要获取文件夹中的图片，暂时用当前图片作为示例
-    items.push({
-      type: 'folder',
-      key: folderPath,
-      name: folderPath === '/' ? '根目录' : folderPath.replace('/', ''),
-      items: uploadedImages.value // 实际应该根据文件夹路径获取图片
-    })
-  })
+  for (const folderPath of selectedFolders.value) {
+    try {
+      // 获取文件夹内的图片
+      const folderData = await requestListImages({
+        limit: 1000,
+        delimiter: folderPath
+      })
+      
+      items.push({
+        type: 'folder',
+        key: folderPath,
+        name: folderPath === '/' ? '根目录' : folderPath.replace('/', ''),
+        items: folderData.list
+      })
+    } catch (error) {
+      console.error(`Failed to get images from folder ${folderPath}:`, error)
+      // 如果获取失败，添加一个空的文件夹项
+      items.push({
+        type: 'folder',
+        key: folderPath,
+        name: folderPath === '/' ? '根目录' : folderPath.replace('/', ''),
+        items: []
+      })
+    }
+  }
   
   return items
 }
 
 // 批量删除
-const batchDelete = () => {
+const batchDelete = async () => {
   ElMessageBox({
     title: '⚠️ 批量删除确认',
     message: `
@@ -484,18 +509,40 @@ const batchDelete = () => {
     cancelButtonText: '❌ 取消',
     customClass: 'cyber-message-box cyber-delete-dialog-box',
     type: 'warning'
-  }).then(() => {
-    const selectedImages = uploadedImages.value.filter(img => img.isSelected)
-    const keysToDelete = selectedImages.map(img => img.key)
+  }).then(async () => {
+    loading.value = true
     
-    if (keysToDelete.length > 0) {
-      requestDeleteImage({ keys: keysToDelete.join(',') }).then(() => {
-        uploadedImages.value = uploadedImages.value.filter(img => !img.isSelected)
-        selectedFolders.value = []
-        ElMessage.success('🎉 删除成功')
-      }).catch(() => {
-        ElMessage.error('❌ 删除失败')
-      })
+    try {
+      const selectedImages = uploadedImages.value.filter(img => img.isSelected)
+      const selectedFolderPaths = selectedFolders.value
+      
+      // 删除选中的图片
+      if (selectedImages.length > 0) {
+        const keysToDelete = selectedImages.map(img => img.key)
+        await requestDeleteImage({ keys: keysToDelete.join(',') })
+      }
+      
+      // 删除选中的文件夹
+      if (selectedFolderPaths.length > 0) {
+        const deleteFolderPromises = selectedFolderPaths.map(folderPath => 
+          requestDeleteFolder({ folderPath })
+        )
+        await Promise.all(deleteFolderPromises)
+      }
+      
+      // 清除选择状态
+      uploadedImages.value.forEach(img => img.isSelected = false)
+      selectedFolders.value = []
+      
+      ElMessage.success('🎉 删除成功')
+      
+      // 刷新图片列表
+      listImages()
+    } catch (error) {
+      console.error('Delete failed:', error)
+      ElMessage.error(`❌ 删除失败: ${error}`)
+    } finally {
+      loading.value = false
     }
   }).catch(() => {})
 }

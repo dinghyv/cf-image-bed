@@ -56,3 +56,4 @@ export const checkToken = (data: AuthToken) => request.post('/rest/checkToken', 
 export const requestDeleteImage = (data: ImgDel) => request.delete('/rest', { data })
 export const requestAllFolders = (): Promise<string[]> => request.post('/rest/folders', {})
 export const requestMoveImages = (data: { keys: string[], targetFolder: string }): Promise<string[]> => request.post('/rest/move', data)
+export const requestDeleteFolder = (data: { folderPath: string }): Promise<string> => request.post('/rest/folder/delete', data)
