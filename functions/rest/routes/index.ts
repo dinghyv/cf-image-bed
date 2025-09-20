@@ -76,6 +76,7 @@ router.post('/list', auth, async (req: Request, env: Env) => {
         return <ImgItem>{
             url: `/rest/${it.key}`,
             copyUrl: `${env.COPY_URL}/${it.key}`,
+            webpUrl: `${env.WEB_URL}/${it.key}`,
             key: it.key,
             size: it.size
         }
@@ -114,6 +115,7 @@ router.post('/upload', auth, async (req: Request, env: Env) => {
                 key: object.key,
                 size: object.size,
                 copyUrl: `${env.COPY_URL}/${object.key}`,
+                webpUrl: `${env.WEB_URL}/${object.key}`,
                 url: `/rest/${object.key}`,
                 filename: item.name
             })

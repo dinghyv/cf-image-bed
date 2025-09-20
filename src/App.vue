@@ -22,10 +22,10 @@
 						<div class="flex items-center space-x-2">
 							<div
 								:class="{
-									'cyber-btn bg-cyber-primary text-cyber-dark': $route.path === '/up',
+									'cyber-btn-active': $route.path === '/up',
 									'cyber-btn': $route.path !== '/up'
 								}"
-								class="px-4 py-2 rounded-md text-sm cursor-pointer transition-all duration-300"
+								class="px-4 py-2 rounded-md text-sm cursor-pointer"
 								@click="router.push('/up')"
 							>
 								<font-awesome-icon :icon="faUpload" class="mr-2" />
@@ -34,10 +34,10 @@
 
 							<div
 								:class="{
-									'cyber-btn bg-cyber-primary text-cyber-dark': $route.path === '/',
+									'cyber-btn-active': $route.path === '/',
 									'cyber-btn': $route.path !== '/'
 								}"
-								class="px-4 py-2 rounded-md text-sm cursor-pointer transition-all duration-300"
+								class="px-4 py-2 rounded-md text-sm cursor-pointer"
 								@click="router.push('/')"
 							>
 								<font-awesome-icon :icon="faCog" class="mr-2" />

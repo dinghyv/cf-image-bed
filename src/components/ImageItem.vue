@@ -87,6 +87,25 @@
                 </div>
               </div>
             </div>
+
+            <!-- WebP链接 -->
+            <div class="w-full">
+              <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
+                <font-awesome-icon :icon="faImage" class="mr-2 text-cyber-accent" />
+                WebP Link
+              </label>
+              <div class="relative">
+                <input 
+                  :value="it.webpUrl" 
+                  class="cyber-input w-full cursor-pointer pr-10" 
+                  readonly 
+                  @click="copyLink" 
+                />
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-primary">
+                  <font-awesome-icon :icon="faCopy" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

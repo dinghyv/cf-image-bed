@@ -58,6 +58,16 @@
 						</div>
 					</el-tooltip>
 					<el-divider direction="vertical" class="h-full" />
+					<el-tooltip :content="webpUrl" placement="top-start">
+						<div
+							class="flex-1 flex items-center justify-center cursor-pointer hover:bg-cyber-accent/20 transition-colors duration-200"
+							@click="copyLink(webpUrl)"
+						>
+							<font-awesome-icon :icon="faImage" class="mr-2 text-cyber-accent" />
+							<span class="text-xs">WebP</span>
+						</div>
+					</el-tooltip>
+					<el-divider direction="vertical" class="h-full" />
 					<el-popconfirm
 						title="确认删除图片吗？"
 						confirm-button-type="danger"
@@ -95,7 +105,8 @@ import LoadingOverlay from '../components/LoadingOverlay.vue'
 
 const props = defineProps<{
 	src: string
-	copyUrl:string
+	copyUrl: string
+	webpUrl?: string
 	name: string
 	size: number
 	mode: 'converted' | 'uploaded'

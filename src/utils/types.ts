@@ -17,8 +17,9 @@ export interface AuthToken {
 export interface ImgItem {
 	key : string
 	url : string
+	copyUrl: string
+	webpUrl?: string
 	size: number
-
 	filename ?: string
 }
 

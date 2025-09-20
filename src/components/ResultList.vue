@@ -54,6 +54,18 @@
           {{ viewLinks() }}
         </div>
       </el-tab-pane>
+      
+      <el-tab-pane name="fifth">
+        <template #label>
+          <span class="flex items-center">
+            <font-awesome-icon :icon="faImage" class="mr-2" />
+            WebP
+          </span>
+        </template>
+        <div class="cyber-input p-4 max-w-full overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" @click="copyLink">
+          {{ webpLinks() }}
+        </div>
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -95,6 +107,15 @@ const markdownLinks = () => {
   for(let i = 0; i < length; i++) {
     const it = props.imageList[i]
     text += `![${it.filename}](${it.url})\n`
+  }
+  return text
+}
+const webpLinks = () => {
+  let text = ''
+  const length = props.imageList.length
+  for(let i = 0; i < length; i++) {
+    const it = props.imageList[i]
+    text += `${it.webpUrl}\n`
   }
   return text
 }

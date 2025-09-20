@@ -72,7 +72,7 @@
 
 				<!-- 清除按钮 -->
 				<div class="md:col-span-1">
-					<div class="cyber-btn w-full h-12 cursor-pointer flex items-center justify-center bg-cyber-secondary border-cyber-secondary" 
+					<div class="cyber-btn-secondary w-full h-12 cursor-pointer flex items-center justify-center" 
 						 :class="{ 'area-disabled': loading }" 
 						 @click="clearInput">
 						<font-awesome-icon :icon="faTrash" class="mr-2" />
@@ -82,7 +82,7 @@
 
 				<!-- 剪切板按钮 -->
 				<div class="md:col-span-1">
-					<div class="cyber-btn w-full h-12 cursor-pointer flex items-center justify-center bg-cyber-accent border-cyber-accent" 
+					<div class="cyber-btn-accent w-full h-12 cursor-pointer flex items-center justify-center" 
 						 :class="{ 'area-disabled': loading }" 
 						 @click="clipboardUpload">
 						<font-awesome-icon :icon="faCopy" class="mr-2" />
@@ -92,7 +92,7 @@
 
 				<!-- 上传按钮 -->
 				<div class="md:col-span-1">
-					<div class="cyber-btn w-full h-12 cursor-pointer flex items-center justify-center bg-cyber-primary border-cyber-primary text-cyber-dark font-bold" 
+					<div class="cyber-btn-active w-full h-12 cursor-pointer flex items-center justify-center font-bold" 
 						 :class="{ 'area-disabled': convertedImages.length === 0 || loading }" 
 						 @click="uploadImages">
 						<font-awesome-icon :icon="faUpload" class="mr-2" />
