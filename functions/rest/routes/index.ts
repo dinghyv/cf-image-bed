@@ -111,6 +111,7 @@ router.post('/list', auth, async (req: Request, env: Env) => {
 router.post('/upload', auth, async (req: Request, env: Env) => {
     const files = await req.formData()
     const images = files.getAll("files")
+    const targetFolder = files.get("folder") as string || "/" // 获取目标文件夹，默认为根目录
     const errs = []
     const urls = Array<ImgItem>()
     for (let item of images) {
@@ -124,7 +125,7 @@ router.post('/upload', auth, async (req: Request, env: Env) => {
         
         // 处理文件名：替换空格为连字符，添加时间戳
         const processedFileName = processFileName(originFileName, time)
-        const objecPath = await getFilePath(fileType, processedFileName, time)
+        const objecPath = await getFilePath(fileType, processedFileName, time, targetFolder)
         const header = new Headers()
         header.set("content-type", fileType)
         header.set("content-length", `${item.size}`)

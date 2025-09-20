@@ -49,7 +49,7 @@
 
 		<!-- 赛博朋克控制面板 -->
 		<div class="cyber-card mt-6 p-4">
-			<div class="grid grid-cols-1 md:grid-cols-8 gap-3">
+			<div class="grid grid-cols-1 md:grid-cols-10 gap-3">
 				<!-- 选择图片按钮 -->
 				<div class="md:col-span-1">
 					<div class="cyber-btn w-full h-12 cursor-pointer flex items-center justify-center" 
@@ -60,8 +60,17 @@
 					</div>
 				</div>
 
+				<!-- 文件夹选择器 -->
+				<div class="md:col-span-2">
+					<select v-model="selectedFolder" class="cyber-select w-full h-12 bg-cyber-bg-dark border border-cyber-border rounded text-cyber-text px-3">
+						<option v-for="folder in availableFolders" :key="folder" :value="folder">
+							📁 {{ folder === '/' ? '根目录' : folder.replace('/', '') }}
+						</option>
+					</select>
+				</div>
+
 				<!-- 状态信息 -->
-				<div class="md:col-span-4">
+				<div class="md:col-span-3">
 					<div class="cyber-input w-full h-12 flex items-center justify-center md:justify-start">
 						<span class="cyber-text">
 							已选择 <span class="text-cyber-primary font-bold">{{ convertedImages.length }}</span> 张，
@@ -91,12 +100,12 @@
 				</div>
 
 				<!-- 上传按钮 -->
-				<div class="md:col-span-1">
+				<div class="md:col-span-2">
 					<div class="cyber-btn-active w-full h-12 cursor-pointer flex items-center justify-center font-bold" 
 						 :class="{ 'area-disabled': convertedImages.length === 0 || loading }" 
 						 @click="uploadImages">
 						<font-awesome-icon :icon="faUpload" class="mr-2" />
-						<span class="hidden md:inline">上传</span>
+						<span class="hidden md:inline">上传到 {{ selectedFolder === '/' ? '根目录' : selectedFolder.replace('/', '') }}</span>
 					</div>
 				</div>
 			</div>
@@ -119,13 +128,15 @@ import { computed, onMounted, onUnmounted, ref, h } from 'vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import formatBytes from '../utils/format-bytes'
 import { ElNotification as elNotify, ElMessage } from 'element-plus'
-import { requestUploadImages } from '../utils/request'
+import { requestUploadImages, requestListImages } from '../utils/request'
 import { useRouter } from 'vue-router'
 import ImageBox from '../components/ImageBox.vue'
 import ResultList from '../components/ResultList.vue'
-import type { ConvertedImage, ImgItem } from '../utils/types'
+import type { ConvertedImage, ImgItem, ImgReq } from '../utils/types'
 const convertedImages = ref<ConvertedImage[]>([])
 const imgResultList = ref<ImgItem[]>([])
+const availableFolders = ref<string[]>(['/'])
+const selectedFolder = ref('/')
 const imagesTotalSize = computed(() =>
 	convertedImages.value.reduce((total, item) => total + item.file.size, 0)
 )
@@ -147,8 +158,27 @@ const onPaste = (e: ClipboardEvent) => {
 	appendConvertedImages(e.clipboardData?.files)
 }
 
+// 获取可用文件夹列表
+const loadAvailableFolders = async () => {
+	try {
+		const data = await requestListImages(<ImgReq> {
+			limit: 1,
+			delimiter: '/'
+		})
+		if (data.prefixes && data.prefixes.length) {
+			availableFolders.value = ['/', ...data.prefixes]
+		} else {
+			availableFolders.value = ['/']
+		}
+	} catch (error) {
+		console.error('Failed to load folders:', error)
+		availableFolders.value = ['/']
+	}
+}
+
 onMounted(() => {
 	document.onpaste = onPaste
+	loadAvailableFolders()
 })
 
 onUnmounted(() => {
@@ -235,12 +265,14 @@ const uploadImages = () => {
 	for (let item of convertedImages.value) {
 		formData.append('files', item.file)
 	}
+	// 添加目标文件夹参数
+	formData.append('folder', selectedFolder.value)
 
 	requestUploadImages(formData)
 		.then((res) => {
 			elNotify({
 				title: '上传完成',
-				message: `共 ${convertedImages.value.length} 张图片，${formatBytes(
+				message: `共 ${convertedImages.value.length} 张图片已上传到 ${selectedFolder.value === '/' ? '根目录' : selectedFolder.value.replace('/', '')}，${formatBytes(
 					imagesTotalSize.value
 				)}`,
 				type: 'success'

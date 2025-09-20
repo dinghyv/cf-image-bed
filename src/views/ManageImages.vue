@@ -431,9 +431,8 @@ const showMoveDialog = () => {
         <div class="mb-4">
           <div class="cyber-text text-sm mb-2">选择目标文件夹：</div>
           <select id="targetFolder" class="cyber-select w-full p-3 bg-cyber-bg-dark border border-cyber-border rounded text-cyber-text">
-            <option value="/">📁 根目录</option>
-            ${prefixes.value.filter(p => p !== '/' && p !== delimiter.value).map(folder => 
-              `<option value="${folder}">📁 ${folder.replace('/', '')}</option>`
+            ${prefixes.value.filter(p => p !== delimiter.value).map(folder => 
+              `<option value="${folder}">📁 ${folder === '/' ? '根目录' : folder.replace('/', '')}</option>`
             ).join('')}
           </select>
         </div>

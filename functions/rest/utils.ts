@@ -38,7 +38,7 @@ export function checkFileType(val: string): boolean {
 }
 
 // 获取文件名
-export async function getFilePath(val: string, filename: string, time: number): Promise<string> {
+export async function getFilePath(val: string, filename: string, time: number, targetFolder: string = "/"): Promise<string> {
     const types = supportFiles.filter(it => it.type === val)
     if (!types || types.length < 1) {
         return val
@@ -52,6 +52,13 @@ export async function getFilePath(val: string, filename: string, time: number): 
     if (month < 10) {
         month = `0${month}`;
     }
+    
+    // 如果指定了目标文件夹，使用目标文件夹路径
+    if (targetFolder && targetFolder !== "/") {
+        const folderPath = targetFolder.startsWith("/") ? targetFolder.substring(1) : targetFolder
+        return `${folderPath}/${year}/${month}/${filename}`
+    }
+    
     return `${year}/${month}/${filename}`
 
 }

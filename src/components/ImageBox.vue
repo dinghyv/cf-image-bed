@@ -168,8 +168,11 @@ const showPreview = () => {
         // 删除功能
         confirmDelete()
         done()
+      } else if (action === 'close') {
+        // 点击右上角关闭按钮，直接关闭，不执行任何操作
+        done()
       } else {
-        // 关闭按钮，直接关闭
+        // 其他情况，直接关闭
         done()
       }
     }
