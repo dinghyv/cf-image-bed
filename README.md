@@ -1,141 +1,86 @@
-# 🤠 荒野图床 🤠
+## Picx4R2
 
-一个西部牛仔风格的文件托管服务，让您的文件在数字荒野中自由驰骋。
+A free image service based on cloudflare Pages & R2.
 
-## 功能特点
+这是一款基于 Cloudflare 的 Worker、R2、Pages 实现的图床应用。
 
-- 🔐 **安全登录**: 用户名密码验证系统
-- 🎨 **西部牛仔风格**: 独特的19世纪西部主题设计
-- 📁 **智能分类**: 自动将文件分类到不同文件夹
-  - 图片文件 → `image/` 文件夹
-  - HTML文件 → `html/` 文件夹  
-  - 其他文件 → `files/` 文件夹
-- 🖱️ **拖拽上传**: 支持拖拽文件到上传区域
-- 📏 **大小限制**: 支持最大25MB的文件上传
-- 🔗 **链接生成**: 自动生成文件访问链接
-- 📱 **响应式设计**: 支持移动端访问
+### 具有以下特点
 
-## 登录信息
+* 每月 10GB 的免费存储空间。
+* 每月 100 万次 (1 million requests/month) 的 A 类操作。
+* 每月 1000 万次 (10 million requests/month) B 类操作。
+* 不需要自己购买服务器，克隆代码后部署 CloudFlare 即可使用。
+* 独立部署不需要担心被第三方删除数据。
 
-- **用户名**: `dinghy`
-- **密码**: `320324ding`
+![cf-r2-price](https://static.weiyan.tech/r2/cloudflare-r2-price.webp)
 
-## 🚀 快速开始
+### 已实现功能
 
-### 方法1: 使用启动脚本（推荐）
+* 图片批量上传
+* 图片列表查询
+* 图片删除
+* 目录创建
+* 按目录查询
+* 链接地址点击复制
+* 简单的身份认证功能，进入管理页面需要授权
 
-```bash
-./start_server.sh
-```
+### 已知问题
 
-然后选择启动方式：
-1. Python服务器（支持文件上传）
-2. PHP内置服务器（需要PHP）
-3. 纯前端版本（无需服务器）
+1. 上传的图片默认按照 **`Year/Month`** 的路径保存，无法上传到指定的目录。
+2. 新建目录后，在新建的目录下会默认生成一个 **未命名的对象**，目前这个对象需要登录 Cloudflare R2 才能删除。
 
-### 方法2: 手动启动
+对于已知问题，如果有小伙伴已经有解决方案，欢迎 PR 或者其他任何的方式告知一下，非常感谢。
 
-#### Python服务器（支持POST请求）
-```bash
-python3 server.py
-# 或
-python server.py
-```
+### 部署教程
 
-#### PHP内置服务器
-```bash
-php -S localhost:8000
-```
+1. Fork 项目到自己的 GitHub
+2. 创建 Page 项目
+3. 输入编译参数
 
-#### 纯前端版本
-直接打开 `index_standalone.html` 文件
+    1. 框架预设：无
+    2. 构建命令：`npm run build`
+    3. 输出目录：`dist`
 
-## 📁 文件说明
+4. 完成创建
+5. 设置环境变量
 
-| 文件名 | 说明 | 适用场景 |
-|--------|------|----------|
-| `index.html` | 完整版本（带登录） | 需要用户认证 |
-| `index_demo.html` | 演示版本（无登录） | 展示界面效果 |
-| `index_standalone.html` | 独立版本（本地存储） | 无需服务器 |
-| `server.py` | Python服务器 | 支持文件上传 |
-| `upload.php` | PHP上传处理 | 需要PHP环境 |
-| `upload_simple.php` | 简化PHP上传 | 更稳定的版本 |
+    1. `AUTH_TOKEN`：授权码，这个可以自定义填写，后面页面登录需要用到；
+    2. `COPY_URL`：复制的路径，如有 R2 存储桶自定义域名则填写自定义域名，否则开启并填写公共 R2.dev 存储桶的 URL；
+    3. `NODE_VERSION`：`20.11.1`；
+    4. `NPM_VERSION`：`10.2.4`。
+    
+6. 创建 KV 命名空间
 
-## 环境要求
+    1. 在 "Workers 和 Pages" 创建 KV 命名空间。
+    ![](https://static.weiyan.tech/picx/kv.webp)
 
-### Python服务器
-- Python 3.6+
-- 无需额外依赖
+7. 设置函数，KV 命名空间绑定
 
-### PHP服务器
-- PHP 7.0+
-- 支持文件上传功能
+    1. 回到 cloudflare page，点击 "设置" → "函数" 中 "KV 命名空间绑定"。
+    ![](https://static.weiyan.tech/picx/kv-name.webp)
+   
+8. 设置函数，绑定 R2
 
-### 纯前端版本
-- 现代浏览器
-- 支持localStorage
+   变量名为：`R2`
+   ![](https://static.weiyan.tech/picx/r2-storage.webp)
+   
+10. 重新部署
 
-## 部署步骤
+## 使用教程
 
-1. 下载项目文件
-2. 选择启动方式：
-   - **开发测试**: 使用 `start_server.sh`
-   - **生产环境**: 部署到支持PHP的Web服务器
-3. 确保存储目录有写入权限：
-   ```bash
-   chmod 755 image/
-   chmod 755 html/
-   chmod 755 files/
-   ```
+1. 登录页面
+   ![picx4r2-login](https://static.weiyan.tech/picx/picx4r2-login.png)
 
-## 文件结构
+2. 登录后的界面
+   ![picx4r2-main](https://static.weiyan.tech/picx/picx4r2-main.png)
 
-```
-cf-image-bed/
-├── index.html          # 主页面
-├── upload.php          # 文件上传处理脚本
-├── image/              # 图片文件存储目录
-├── html/               # HTML文件存储目录
-├── files/              # 其他文件存储目录
-└── README.md           # 说明文档
-```
+3. 上传图片界面
+   ![picx4r2-upload](https://static.weiyan.tech/picx/picx4r2-upload.png)
 
-## 使用说明
+4. 图片管理界面
+   ![picx4r2-manage](https://static.weiyan.tech/picx/picx4r2-manage.png)
 
-1. 打开网站，输入用户名和密码登录
-2. 在文件上传区域选择文件或拖拽文件
-3. 确认文件信息后点击"确认上传"
-4. 上传完成后会显示文件链接
-5. 点击"复制链接"按钮复制文件URL
 
-## 安全特性
+### 感谢
 
-- 用户名密码加密存储
-- 文件类型验证
-- 文件大小限制
-- 文件名安全处理
-- 防止路径遍历攻击
-
-## 技术栈
-
-- **前端**: HTML5, CSS3, JavaScript (ES6+)
-- **后端**: PHP
-- **样式**: 西部牛仔主题设计
-- **功能**: 拖拽上传、文件分类、链接生成
-
-## 版权信息
-
-© 2024 安稳antwen - 荒野图床服务
-
-让您的文件在数字荒野中自由驰骋！
-
-## 注意事项
-
-- 请确保服务器有足够的存储空间
-- 建议定期清理不需要的文件
-- 生产环境请修改默认登录密码
-- 可根据需要调整文件大小限制
-
----
-
-*"在数字荒野中，每个文件都有它的归宿"* 🤠
+本项目 fork 自 [liangliangle/roim-picx](https://github.com/liangliangle/roim-picx)
