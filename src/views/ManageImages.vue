@@ -150,12 +150,12 @@ const changeFolder = (path : string) => {
   listImages()
 }
 const addFolder = () => {
-  ElMessageBox.prompt('请输入目录名称，仅支持 [0-9A-Za-z_-] 组成的名称', '新增目录', {
-    confirmButtonText: '创建',
-    cancelButtonText: '取消',
+  ElMessageBox.prompt('请输入目录名称，仅支持 [0-9A-Za-z_-] 组成的名称', '📁 新增目录', {
+    confirmButtonText: '🚀 创建',
+    cancelButtonText: '❌ 取消',
     inputPattern: /^[0-9A-Za-z_-]+$/,
     inputErrorMessage: '无效的目录名称',
-    customClass: 'cyber-message-box',
+    customClass: 'cyber-message-box cyber-folder-dialog',
     inputPlaceholder: '例如: my-folder',
     inputValidator: (value) => {
       if (!value) {
@@ -172,10 +172,10 @@ const addFolder = () => {
       name: value
     }).then((res) => {
       console.log(res)
-      ElMessage.success('文件夹创建成功')
+      ElMessage.success('🎉 文件夹创建成功')
       listImages()
     }).catch(() => {
-      ElMessage.error('文件夹创建失败')
+      ElMessage.error('❌ 文件夹创建失败')
     }).finally(() => {
       loading.value = false
     })
