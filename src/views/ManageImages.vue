@@ -90,7 +90,7 @@
 						/>
 					</div>
 					<font-awesome-icon :icon="faFolder" class="text-2xl mr-2" />
-					<span v-if="it !== '/'" class="cyber-text">{{ it.replace("/", "") }}</span>
+					<span v-if="it !== '/'" class="cyber-text">{{ getFolderDisplayName(it) }}</span>
 					<span v-else class="cyber-text">根目录</span>
 				</div>
 			</div>
@@ -173,6 +173,26 @@ const selectedCount = computed(() => {
     const selectedImages = uploadedImages.value.filter(img => img.isSelected).length
     return selectedImages + selectedFolders.value.length
 })
+
+// 获取文件夹显示名称
+const getFolderDisplayName = (folderPath: string) => {
+    if (folderPath === '/') return '根目录'
+    
+    // 移除开头的斜杠
+    let path = folderPath.startsWith('/') ? folderPath.substring(1) : folderPath
+    // 移除结尾的斜杠
+    path = path.endsWith('/') ? path.slice(0, -1) : path
+    
+    // 如果当前在子文件夹中，只显示相对于当前文件夹的名称
+    if (delimiter.value !== '/' && path.startsWith(delimiter.value.replace('/', ''))) {
+        const relativePath = path.substring(delimiter.value.replace('/', '').length)
+        return relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
+    }
+    
+    // 否则显示完整路径的最后一部分
+    const parts = path.split('/')
+    return parts[parts.length - 1] || path
+}
 const changeFolder = (path : string) => {
   console.log(path)
   delimiter.value = path
@@ -218,18 +238,50 @@ const listImages = () => {
     delimiter: delimiter.value
   }).then((data) => {
     uploadedImages.value = data.list
+    
+    // 处理文件夹列表
     if (data.prefixes && data.prefixes.length) {
-      prefixes.value = data.prefixes
+      // 过滤出当前文件夹的直接子文件夹
+      const currentPrefix = delimiter.value === '/' ? '' : delimiter.value.replace('/', '')
+      const subFolders = data.prefixes.filter(prefix => {
+        const prefixPath = prefix.replace('/', '')
+        // 只显示直接子文件夹，不显示更深层的文件夹
+        return prefixPath.startsWith(currentPrefix) && 
+               prefixPath.substring(currentPrefix.length).split('/').length === 2
+      })
+      
+      prefixes.value = subFolders
+      
+      // 如果不是根目录，添加父目录和根目录选项
       if (delimiter.value !== '/') {
-        prefixes.value = ['/', ...data.prefixes]
+        const parentPath = getParentPath(delimiter.value)
+        prefixes.value = [parentPath, '/', ...subFolders]
       }
     } else {
-      prefixes.value = ['/']
+      // 如果没有子文件夹，只显示导航选项
+      if (delimiter.value !== '/') {
+        const parentPath = getParentPath(delimiter.value)
+        prefixes.value = [parentPath, '/']
+      } else {
+        prefixes.value = ['/']
+      }
     }
   }).catch(() => {})
 		.finally(() => {
 			loading.value = false
 		})
+}
+
+// 获取父文件夹路径
+const getParentPath = (currentPath: string) => {
+  if (currentPath === '/') return '/'
+  
+  const path = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath
+  const parts = path.split('/')
+  
+  if (parts.length <= 2) return '/'
+  
+  return parts.slice(0, -1).join('/') + '/'
 }
 
 // 拖拽上传相关函数

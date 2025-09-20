@@ -46,6 +46,15 @@ export async function getFilePath(val: string, filename: string, time: number, t
     const rand = Math.floor(Math.random() * 100000)
     const fileName = randomString(time + rand).concat(`.${types[0].ext}`)
     
+    // 如果指定了目标文件夹，直接上传到该文件夹
+    if (targetFolder && targetFolder !== "/") {
+        // 移除开头的斜杠，并确保结尾没有斜杠
+        let folderPath = targetFolder.startsWith("/") ? targetFolder.substring(1) : targetFolder
+        folderPath = folderPath.endsWith("/") ? folderPath.slice(0, -1) : folderPath
+        return `${folderPath}/${fileName}`
+    }
+    
+    // 根目录仍然使用年份月份结构
     let date = new Date()
     const year = date.getFullYear() //获取完整的年份(4位)
     let month = date.getMonth() + 1 //获取当前月份(0-11,0代表1月)
@@ -53,15 +62,7 @@ export async function getFilePath(val: string, filename: string, time: number, t
         month = `0${month}`;
     }
     
-    // 如果指定了目标文件夹，使用目标文件夹路径
-    if (targetFolder && targetFolder !== "/") {
-        // 移除开头的斜杠，并确保结尾没有斜杠
-        let folderPath = targetFolder.startsWith("/") ? targetFolder.substring(1) : targetFolder
-        folderPath = folderPath.endsWith("/") ? folderPath.slice(0, -1) : folderPath
-        return `${folderPath}/${year}/${month}/${filename}`
-    }
-    
-    return `${year}/${month}/${filename}`
+    return `${year}/${month}/${fileName}`
 
 }
 
