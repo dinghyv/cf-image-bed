@@ -457,6 +457,153 @@ body::after {
 	100% { left: 100%; }
 }
 
+/* 赛博朋克弹窗样式 */
+:deep(.el-message-box),
+:deep(.cyber-message-box) {
+	background: var(--cyber-bg-card) !important;
+	border: 1px solid var(--cyber-border) !important;
+	border-radius: 12px !important;
+	box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8) !important;
+	position: relative !important;
+	overflow: hidden !important;
+}
+
+:deep(.cyber-message-box::before) {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: linear-gradient(90deg, var(--cyber-primary), var(--cyber-secondary), var(--cyber-accent));
+	z-index: 1;
+}
+
+:deep(.el-message-box__header) {
+	background: var(--cyber-bg-dark) !important;
+	border-bottom: 1px solid var(--cyber-border) !important;
+	padding: 20px 24px !important;
+}
+
+:deep(.el-message-box__title) {
+	color: var(--cyber-text) !important;
+	font-weight: bold !important;
+	font-size: 18px !important;
+}
+
+:deep(.el-message-box__headerbtn) {
+	top: 20px !important;
+	right: 24px !important;
+}
+
+:deep(.el-message-box__close) {
+	color: var(--cyber-text-dim) !important;
+}
+
+:deep(.el-message-box__close:hover) {
+	color: var(--cyber-primary) !important;
+}
+
+:deep(.el-message-box__content) {
+	background: var(--cyber-bg-card) !important;
+	padding: 24px !important;
+}
+
+:deep(.el-message-box__message) {
+	color: var(--cyber-text) !important;
+	line-height: 1.6 !important;
+}
+
+:deep(.el-message-box__input) {
+	margin-top: 16px !important;
+}
+
+:deep(.el-message-box__input .el-input__wrapper) {
+	background: var(--cyber-bg-dark) !important;
+	border: 1px solid var(--cyber-border) !important;
+	border-radius: 6px !important;
+	box-shadow: none !important;
+}
+
+:deep(.el-message-box__input .el-input__inner) {
+	color: var(--cyber-text) !important;
+	background: transparent !important;
+}
+
+:deep(.el-message-box__input .el-input__inner:focus) {
+	border-color: var(--cyber-primary) !important;
+	box-shadow: 0 0 10px rgba(0, 255, 136, 0.3) !important;
+}
+
+:deep(.el-message-box__input .el-input__inner::placeholder) {
+	color: var(--cyber-text-dim) !important;
+}
+
+:deep(.el-message-box__btns) {
+	background: var(--cyber-bg-dark) !important;
+	border-top: 1px solid var(--cyber-border) !important;
+	padding: 16px 24px !important;
+}
+
+:deep(.el-message-box__btns .el-button) {
+	border-radius: 6px !important;
+	font-weight: 500 !important;
+	transition: all 0.3s ease !important;
+}
+
+:deep(.el-message-box__btns .el-button--primary) {
+	background: linear-gradient(45deg, var(--cyber-primary), var(--cyber-accent)) !important;
+	border: 1px solid var(--cyber-primary) !important;
+	color: var(--cyber-bg-dark) !important;
+	box-shadow: 0 0 10px rgba(0, 255, 136, 0.3) !important;
+}
+
+:deep(.el-message-box__btns .el-button--primary:hover) {
+	background: linear-gradient(45deg, var(--cyber-accent), var(--cyber-primary)) !important;
+	box-shadow: 0 0 20px rgba(0, 255, 136, 0.6) !important;
+	transform: translateY(-2px) !important;
+}
+
+:deep(.el-message-box__btns .el-button--default) {
+	background: var(--cyber-bg-card) !important;
+	border: 1px solid var(--cyber-border) !important;
+	color: var(--cyber-text) !important;
+}
+
+:deep(.el-message-box__btns .el-button--default:hover) {
+	background: var(--cyber-bg-dark) !important;
+	border-color: var(--cyber-primary) !important;
+	color: var(--cyber-primary) !important;
+}
+
+/* 赛博朋克消息提示样式 */
+:deep(.el-message) {
+	background: var(--cyber-bg-card) !important;
+	border: 1px solid var(--cyber-border) !important;
+	border-radius: 8px !important;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+:deep(.el-message__content) {
+	color: var(--cyber-text) !important;
+}
+
+:deep(.el-message--success) {
+	border-color: var(--cyber-primary) !important;
+}
+
+:deep(.el-message--success .el-message__content) {
+	color: var(--cyber-primary) !important;
+}
+
+:deep(.el-message--error) {
+	border-color: var(--cyber-secondary) !important;
+}
+
+:deep(.el-message--error .el-message__content) {
+	color: var(--cyber-secondary) !important;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
 	.cyber-grid {
@@ -466,5 +613,10 @@ body::after {
 	
 	.cyber-scanline {
 		height: 1px;
+	}
+	
+	:deep(.el-message-box) {
+		margin: 20px !important;
+		width: calc(100% - 40px) !important;
 	}
 }

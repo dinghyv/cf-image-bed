@@ -22,30 +22,6 @@
       <el-tab-pane name="second">
         <template #label>
           <span class="flex items-center">
-            <font-awesome-icon :icon="faCode" class="mr-2" />
-            HTML
-          </span>
-        </template>
-        <div class="cyber-input p-4 max-w-full overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" @click="copyLink">
-          {{ htmlLinks() }}
-        </div>
-      </el-tab-pane>
-      
-      <el-tab-pane name="third">
-        <template #label>
-          <span class="flex items-center">
-            <font-awesome-icon :icon="faFileText" class="mr-2" />
-            Markdown
-          </span>
-        </template>
-        <div class="cyber-input p-4 max-w-full overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" @click="copyLink">
-          {{ markdownLinks() }}
-        </div>
-      </el-tab-pane>
-      
-      <el-tab-pane name="fourth">
-        <template #label>
-          <span class="flex items-center">
             <font-awesome-icon :icon="faLink" class="mr-2" />
             链接
           </span>
@@ -55,7 +31,7 @@
         </div>
       </el-tab-pane>
       
-      <el-tab-pane name="fifth">
+      <el-tab-pane name="third">
         <template #label>
           <span class="flex items-center">
             <font-awesome-icon :icon="faImage" class="mr-2" />
@@ -64,6 +40,30 @@
         </template>
         <div class="cyber-input p-4 max-w-full overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" @click="copyLink">
           {{ webpLinks() }}
+        </div>
+      </el-tab-pane>
+      
+      <el-tab-pane name="fourth">
+        <template #label>
+          <span class="flex items-center">
+            <font-awesome-icon :icon="faCode" class="mr-2" />
+            HTML
+          </span>
+        </template>
+        <div class="cyber-input p-4 max-w-full overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" @click="copyLink">
+          {{ htmlLinks() }}
+        </div>
+      </el-tab-pane>
+      
+      <el-tab-pane name="fifth">
+        <template #label>
+          <span class="flex items-center">
+            <font-awesome-icon :icon="faFileText" class="mr-2" />
+            Markdown
+          </span>
+        </template>
+        <div class="cyber-input p-4 max-w-full overflow-auto whitespace-pre font-mono text-sm cursor-pointer hover:border-cyber-primary transition-colors" @click="copyLink">
+          {{ markdownLinks() }}
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -88,7 +88,7 @@ const htmlLinks = () => {
   const length = props.imageList.length
   for(let i = 0; i < length; i++) {
     const it = props.imageList[i]
-    text += `<a href="${it.url}" target="_blank"><img src="${it.url}"></a>\n`
+    text += `<a href="${it.copyUrl}" target="_blank"><img src="${it.copyUrl}"></a>\n`
   }
   return text
 }
@@ -97,7 +97,7 @@ const viewLinks = () => {
   const length = props.imageList.length
   for(let i = 0; i < length; i++) {
     const it = props.imageList[i]
-    text += `${it.url}\n`
+    text += `${it.copyUrl}\n`
   }
   return text
 }
@@ -106,7 +106,7 @@ const markdownLinks = () => {
   const length = props.imageList.length
   for(let i = 0; i < length; i++) {
     const it = props.imageList[i]
-    text += `![${it.filename}](${it.url})\n`
+    text += `![${it.filename}](${it.copyUrl})\n`
   }
   return text
 }

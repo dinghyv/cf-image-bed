@@ -31,44 +31,6 @@
         <!-- 链接列表 -->
         <div class="flex-1 min-w-0">
           <div class="space-y-4">
-            <!-- HTML链接 -->
-            <div class="w-full">
-              <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
-                <font-awesome-icon :icon="faCode" class="mr-2 text-cyber-accent" />
-                HTML
-              </label>
-              <div class="relative">
-                <input 
-                  :value="htmlLink(it.copyUrl, it.filename)" 
-                  class="cyber-input w-full cursor-pointer pr-10" 
-                  readonly 
-                  @click="copyLink" 
-                />
-                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-primary">
-                  <font-awesome-icon :icon="faCopy" />
-                </div>
-              </div>
-            </div>
-
-            <!-- Markdown链接 -->
-            <div class="w-full">
-              <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
-                <font-awesome-icon :icon="faFileText" class="mr-2 text-cyber-secondary" />
-                Markdown
-              </label>
-              <div class="relative">
-                <input 
-                  :value="markdownLink(it.copyUrl, it.filename)" 
-                  class="cyber-input w-full cursor-pointer pr-10" 
-                  readonly 
-                  @click="copyLink" 
-                />
-                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-primary">
-                  <font-awesome-icon :icon="faCopy" />
-                </div>
-              </div>
-            </div>
-
             <!-- 直接链接 -->
             <div class="w-full">
               <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
@@ -97,6 +59,44 @@
               <div class="relative">
                 <input 
                   :value="it.webpUrl" 
+                  class="cyber-input w-full cursor-pointer pr-10" 
+                  readonly 
+                  @click="copyLink" 
+                />
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-primary">
+                  <font-awesome-icon :icon="faCopy" />
+                </div>
+              </div>
+            </div>
+
+            <!-- HTML链接 -->
+            <div class="w-full">
+              <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
+                <font-awesome-icon :icon="faCode" class="mr-2 text-cyber-accent" />
+                HTML
+              </label>
+              <div class="relative">
+                <input 
+                  :value="htmlLink(it.copyUrl, it.filename)" 
+                  class="cyber-input w-full cursor-pointer pr-10" 
+                  readonly 
+                  @click="copyLink" 
+                />
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-primary">
+                  <font-awesome-icon :icon="faCopy" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Markdown链接 -->
+            <div class="w-full">
+              <label class="block text-sm font-medium cyber-text mb-2 flex items-center">
+                <font-awesome-icon :icon="faFileText" class="mr-2 text-cyber-secondary" />
+                Markdown
+              </label>
+              <div class="relative">
+                <input 
+                  :value="markdownLink(it.copyUrl, it.filename)" 
                   class="cyber-input w-full cursor-pointer pr-10" 
                   readonly 
                   @click="copyLink" 

@@ -103,16 +103,27 @@ const addFolder = () => {
     cancelButtonText: '取消',
     inputPattern: /^[0-9A-Za-z_-]+$/,
     inputErrorMessage: '无效的目录名称',
+    customClass: 'cyber-message-box',
+    inputPlaceholder: '例如: my-folder',
+    inputValidator: (value) => {
+      if (!value) {
+        return '目录名称不能为空'
+      }
+      if (!/^[0-9A-Za-z_-]+$/.test(value)) {
+        return '目录名称只能包含字母、数字、下划线和连字符'
+      }
+      return true
+    }
   }).then(({ value }) => {
     loading.value = true
     createFolder(<Folder> {
       name: value
     }).then((res) => {
       console.log(res)
-      ElMessage.success('文件见创建成功')
+      ElMessage.success('文件夹创建成功')
       listImages()
     }).catch(() => {
-      ElMessage.error('文件见创建失败')
+      ElMessage.error('文件夹创建失败')
     }).finally(() => {
       loading.value = false
     })
