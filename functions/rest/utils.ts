@@ -43,8 +43,13 @@ export async function getFilePath(val: string, filename: string, time: number, t
     if (!types || types.length < 1) {
         return val
     }
-    const rand = Math.floor(Math.random() * 100000)
-    const fileName = randomString(time + rand).concat(`.${types[0].ext}`)
+    
+    // 使用处理过的文件名，如果没有则生成随机文件名
+    let fileName = filename
+    if (!fileName) {
+        const rand = Math.floor(Math.random() * 100000)
+        fileName = randomString(time + rand).concat(`.${types[0].ext}`)
+    }
     
     // 如果指定了目标文件夹，直接上传到该文件夹
     if (targetFolder && targetFolder !== "/") {

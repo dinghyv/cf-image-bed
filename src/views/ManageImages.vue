@@ -256,13 +256,21 @@ const listImages = () => {
         
         // 添加父目录和根目录选项
         const parentPath = getParentPath(delimiter.value)
-        prefixes.value = [parentPath, '/', ...subFolders]
+        const navigationOptions = [parentPath]
+        if (parentPath !== '/') {
+          navigationOptions.push('/')
+        }
+        prefixes.value = [...navigationOptions, ...subFolders]
       }
     } else {
       // 如果没有子文件夹
       if (delimiter.value !== '/') {
         const parentPath = getParentPath(delimiter.value)
-        prefixes.value = [parentPath, '/']
+        const navigationOptions = [parentPath]
+        if (parentPath !== '/') {
+          navigationOptions.push('/')
+        }
+        prefixes.value = navigationOptions
       } else {
         prefixes.value = ['/']
       }

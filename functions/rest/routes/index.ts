@@ -90,7 +90,9 @@ router.post('/list', auth, async (req: Request, env: Env) => {
     const truncated = list.truncated ? list.truncated : false
     const cursor = list.cursor
     const objs = list.objects
-    const urls = objs.map(it => {
+    // 过滤掉文件夹标记文件（以 / 结尾的文件）
+    const imageObjects = objs.filter(obj => !obj.key.endsWith('/'))
+    const urls = imageObjects.map(it => {
         return <ImgItem>{
             url: `/rest/${it.key}`,
             copyUrl: `${env.COPY_URL}/${it.key}`,
