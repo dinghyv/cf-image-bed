@@ -84,18 +84,33 @@ router.post('/list', auth, async (req: Request, env: Env) => {
     const options = <R2ListOptions>{
         limit: data.limit,
         cursor: data.cursor,
-        delimiter: data.delimiter,
+        delimiter: "/", // 总是使用 "/" 作为delimiter来获取文件夹结构
         prefix: include
     }
     const list = await env.R2.list(options)
     
     console.log('R2 list result - objects count:', list.objects.length, 'prefixes:', list.delimitedPrefixes)
+    console.log('All objects keys:', list.objects.map(obj => obj.key))
     
     const truncated = list.truncated ? list.truncated : false
     const cursor = list.cursor
     const objs = list.objects
-    // 过滤掉文件夹标记文件（以 / 结尾的文件）
-    const imageObjects = objs.filter(obj => !obj.key.endsWith('/'))
+    
+    // 过滤出当前文件夹下的图片文件（不是文件夹标记文件）
+    const imageObjects = objs.filter(obj => {
+        // 排除文件夹标记文件（以 / 结尾的文件）
+        if (obj.key.endsWith('/')) {
+            return false
+        }
+        
+        // 如果指定了prefix，只返回该prefix下的文件
+        if (include) {
+            return obj.key.startsWith(include)
+        }
+        
+        return true
+    })
+    
     const urls = imageObjects.map(it => {
         return <ImgItem>{
             url: `/rest/${it.key}`,
@@ -106,13 +121,34 @@ router.post('/list', auth, async (req: Request, env: Env) => {
         }
     })
     
-    console.log('Returning - images:', urls.length, 'prefixes:', list.delimitedPrefixes?.length || 0)
+    // 处理文件夹列表 - 过滤出当前文件夹的直接子文件夹
+    let filteredPrefixes = list.delimitedPrefixes || []
+    if (include) {
+        // 只返回当前文件夹的直接子文件夹
+        filteredPrefixes = filteredPrefixes.filter(prefix => {
+            // 确保prefix以当前路径开头
+            if (!prefix.startsWith(include)) {
+                return false
+            }
+            
+            // 获取相对于当前文件夹的路径
+            const relativePath = prefix.substring(include.length)
+            // 移除开头的斜杠
+            const cleanRelativePath = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
+            
+            // 直接子文件夹应该只有一层，即cleanRelativePath不包含斜杠
+            return cleanRelativePath && !cleanRelativePath.includes('/')
+        })
+    }
+    
+    console.log('Filtered prefixes:', filteredPrefixes)
+    console.log('Returning - images:', urls.length, 'prefixes:', filteredPrefixes.length)
     
     return json(Ok(<ImgList>{
         list: urls,
         next: truncated,
         cursor: cursor,
-        prefixes: list.delimitedPrefixes
+        prefixes: filteredPrefixes
     }))
 })
 
