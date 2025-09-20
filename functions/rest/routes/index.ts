@@ -157,7 +157,11 @@ router.post('/folders', auth, async (req: Request, env: Env) => {
         const allFolders = ['/'] // 总是包含根目录
         
         if (list.delimitedPrefixes && list.delimitedPrefixes.length > 0) {
-            allFolders.push(...list.delimitedPrefixes)
+            // 确保文件夹路径格式一致，以 / 结尾
+            const folders = list.delimitedPrefixes.map(prefix => 
+                prefix.endsWith('/') ? prefix : prefix + '/'
+            )
+            allFolders.push(...folders)
         }
         
         return json(Ok(allFolders))

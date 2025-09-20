@@ -55,7 +55,9 @@ export async function getFilePath(val: string, filename: string, time: number, t
     
     // 如果指定了目标文件夹，使用目标文件夹路径
     if (targetFolder && targetFolder !== "/") {
-        const folderPath = targetFolder.startsWith("/") ? targetFolder.substring(1) : targetFolder
+        // 移除开头的斜杠，并确保结尾没有斜杠
+        let folderPath = targetFolder.startsWith("/") ? targetFolder.substring(1) : targetFolder
+        folderPath = folderPath.endsWith("/") ? folderPath.slice(0, -1) : folderPath
         return `${folderPath}/${year}/${month}/${filename}`
     }
     
