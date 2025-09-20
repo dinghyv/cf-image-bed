@@ -241,24 +241,25 @@ const listImages = () => {
     
     // 处理文件夹列表
     if (data.prefixes && data.prefixes.length) {
-      // 过滤出当前文件夹的直接子文件夹
-      const currentPrefix = delimiter.value === '/' ? '' : delimiter.value.replace('/', '')
-      const subFolders = data.prefixes.filter(prefix => {
-        const prefixPath = prefix.replace('/', '')
-        // 只显示直接子文件夹，不显示更深层的文件夹
-        return prefixPath.startsWith(currentPrefix) && 
-               prefixPath.substring(currentPrefix.length).split('/').length === 2
-      })
-      
-      prefixes.value = subFolders
-      
-      // 如果不是根目录，添加父目录和根目录选项
-      if (delimiter.value !== '/') {
+      if (delimiter.value === '/') {
+        // 根目录：显示所有直接子文件夹
+        prefixes.value = data.prefixes
+      } else {
+        // 子文件夹：过滤出当前文件夹的直接子文件夹
+        const currentPrefix = delimiter.value.replace('/', '')
+        const subFolders = data.prefixes.filter(prefix => {
+          const prefixPath = prefix.replace('/', '')
+          // 只显示直接子文件夹
+          return prefixPath.startsWith(currentPrefix) && 
+                 prefixPath.substring(currentPrefix.length).split('/').length === 2
+        })
+        
+        // 添加父目录和根目录选项
         const parentPath = getParentPath(delimiter.value)
         prefixes.value = [parentPath, '/', ...subFolders]
       }
     } else {
-      // 如果没有子文件夹，只显示导航选项
+      // 如果没有子文件夹
       if (delimiter.value !== '/') {
         const parentPath = getParentPath(delimiter.value)
         prefixes.value = [parentPath, '/']
