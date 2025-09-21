@@ -138,7 +138,7 @@ import { faXmark, faTrash, faCopy, faEye, faDownload, faFile, faFileText, faFile
 import copy from 'copy-to-clipboard'
 import formatBytes from '../utils/format-bytes'
 import {ElTooltip, ElDivider, ElPopconfirm, ElImage, ElMessage, ElMessageBox} from 'element-plus'
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 
 const props = defineProps<{
@@ -280,17 +280,12 @@ const downloadFile = () => {
 
 // 显示右键菜单
 const showContextMenu = (event: MouseEvent) => {
-  event.preventDefault()
-  event.stopPropagation()
-  
   contextMenuX.value = event.clientX
   contextMenuY.value = event.clientY
   showContextMenuFlag.value = true
   
-  // 立即添加点击监听器，但使用nextTick确保菜单已渲染
-  nextTick(() => {
-    document.addEventListener('click', hideContextMenu)
-  })
+  // 点击其他地方隐藏菜单
+  document.addEventListener('click', hideContextMenu)
 }
 
 // 隐藏右键菜单

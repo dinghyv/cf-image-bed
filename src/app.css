@@ -1046,85 +1046,6 @@ body::after {
 	opacity: 0.5 !important;
 }
 
-/* 上传对话框样式修复 */
-:deep(.cyber-dialog) {
-	background: var(--cyber-bg-dark) !important;
-}
-
-:deep(.cyber-dialog .el-dialog) {
-	background: var(--cyber-bg-dark) !important;
-	border: 1px solid var(--cyber-border) !important;
-	border-radius: 12px !important;
-	box-shadow: 0 8px 40px rgba(0, 0, 0, 0.9) !important;
-}
-
-:deep(.cyber-dialog .el-dialog__header) {
-	background: var(--cyber-bg-dark) !important;
-	border-bottom: 1px solid var(--cyber-border) !important;
-	color: var(--cyber-text) !important;
-	padding: 20px 24px !important;
-}
-
-:deep(.cyber-dialog .el-dialog__title) {
-	color: var(--cyber-text) !important;
-	font-weight: bold !important;
-	text-shadow: 0 0 5px rgba(0, 255, 136, 0.3) !important;
-}
-
-:deep(.cyber-dialog .el-dialog__body) {
-	background: var(--cyber-bg-dark) !important;
-	color: var(--cyber-text) !important;
-	padding: 24px !important;
-}
-
-:deep(.cyber-dialog .el-dialog__footer) {
-	background: var(--cyber-bg-dark) !important;
-	border-top: 1px solid var(--cyber-border) !important;
-	padding: 20px 24px !important;
-}
-
-:deep(.cyber-dialog .el-dialog__headerbtn) {
-	color: var(--cyber-text-dim) !important;
-}
-
-:deep(.cyber-dialog .el-dialog__close) {
-	color: var(--cyber-text-dim) !important;
-	font-size: 18px !important;
-}
-
-:deep(.cyber-dialog .el-dialog__close:hover) {
-	color: var(--cyber-primary) !important;
-}
-
-/* 上传区域内容样式 */
-.upload-dialog-content {
-	color: var(--cyber-text) !important;
-}
-
-.upload-dialog-content .cyber-text {
-	color: var(--cyber-text) !important;
-}
-
-.upload-dialog-content .cyber-text-dim {
-	color: var(--cyber-text-dim) !important;
-}
-
-.upload-drop-zone {
-	background: var(--cyber-bg-card) !important;
-	border-color: var(--cyber-border) !important;
-	color: var(--cyber-text) !important;
-}
-
-.upload-drop-zone:hover {
-	border-color: var(--cyber-primary) !important;
-	background: rgba(0, 255, 136, 0.05) !important;
-}
-
-.upload-drop-zone.border-cyber-primary {
-	border-color: var(--cyber-primary) !important;
-	background: rgba(0, 255, 136, 0.1) !important;
-}
-
 /* 响应式调整 */
 @media (max-width: 768px) {
 	.cyber-grid {
@@ -1175,44 +1096,29 @@ body::after {
 	}
 
 	/* 上传弹窗样式 */
-	:deep(.cyber-dialog) {
-		background: var(--cyber-bg-dark) !important;
-	}
-
-	:deep(.cyber-dialog .el-dialog) {
-		background: var(--cyber-bg-dark) !important;
-		border: 1px solid var(--cyber-border) !important;
-	}
-
 	:deep(.cyber-dialog .el-dialog__header) {
-		background: var(--cyber-bg-dark) !important;
-		border-bottom: 1px solid var(--cyber-border) !important;
-		color: var(--cyber-text) !important;
-	}
-
-	:deep(.cyber-dialog .el-dialog__title) {
-		color: var(--cyber-text) !important;
+		background: var(--cyber-bg-dark);
+		border-bottom: 1px solid var(--cyber-border);
+		color: var(--cyber-text);
 	}
 
 	:deep(.cyber-dialog .el-dialog__body) {
-		background: var(--cyber-bg-dark) !important;
-		color: var(--cyber-text) !important;
+		background: var(--cyber-bg-card);
+		color: var(--cyber-text);
 	}
 
 	:deep(.cyber-dialog .el-dialog__footer) {
-		background: var(--cyber-bg-dark) !important;
-		border-top: 1px solid var(--cyber-border) !important;
+		background: var(--cyber-bg-dark);
+		border-top: 1px solid var(--cyber-border);
 	}
 
 	.upload-drop-zone {
 		transition: all 0.3s ease;
-		background: var(--cyber-bg-card) !important;
-		color: var(--cyber-text) !important;
 	}
 
 	.upload-drop-zone:hover {
-		border-color: var(--cyber-primary) !important;
-		background: var(--cyber-bg-card) !important;
+		border-color: var(--cyber-primary);
+		background: rgba(var(--cyber-primary-rgb), 0.05);
 	}
 
 	:deep(.cyber-btn-primary) {
@@ -1224,30 +1130,5 @@ body::after {
 	:deep(.cyber-btn-primary:hover) {
 		background: var(--cyber-accent) !important;
 		border-color: var(--cyber-accent) !important;
-	}
-
-	/* 修复Element Plus按钮样式 */
-	:deep(.el-button) {
-		background: var(--cyber-bg-card) !important;
-		border-color: var(--cyber-border) !important;
-		color: var(--cyber-text) !important;
-	}
-
-	:deep(.el-button:hover) {
-		background: var(--cyber-primary) !important;
-		border-color: var(--cyber-primary) !important;
-		color: var(--cyber-bg-dark) !important;
-	}
-
-	:deep(.el-button--primary) {
-		background: var(--cyber-primary) !important;
-		border-color: var(--cyber-primary) !important;
-		color: var(--cyber-bg-dark) !important;
-	}
-
-	:deep(.el-button--danger) {
-		background: var(--cyber-secondary) !important;
-		border-color: var(--cyber-secondary) !important;
-		color: var(--cyber-text) !important;
 	}
 }
