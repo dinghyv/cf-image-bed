@@ -9,6 +9,7 @@ export interface ImgItem {
     url : string
     size: number
     copyUrl: string
+    webpUrl: string
     filename ?: string
 }
 

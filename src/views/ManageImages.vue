@@ -11,9 +11,9 @@
 				<div class="text-6xl mb-4 text-cyber-primary">
 					<font-awesome-icon :icon="faUpload" />
 				</div>
-				<div class="cyber-text text-xl font-bold mb-2">拖拽图片到此处上传</div>
+				<div class="cyber-text text-xl font-bold mb-2">拖拽文件到此处上传</div>
 				<div class="cyber-text-dim text-sm">
-					将图片拖拽到此区域，即可上传到 <span class="text-cyber-accent font-bold">{{ delimiter === '/' ? '根目录' : delimiter.replace('/', '') }}</span>
+					将文件拖拽到此区域，即可上传到 <span class="text-cyber-accent font-bold">{{ delimiter === '/' ? '根目录' : delimiter.replace('/', '') }}</span>
 				</div>
 			</div>
 		</div>
@@ -27,7 +27,7 @@
 						管理
 					</div>
 					<div class="cyber-text-dim text-sm">
-						已上传 <span class="text-cyber-primary font-bold">{{ uploadedImages.length }}</span> 张图片，
+						已上传 <span class="text-cyber-primary font-bold">{{ uploadedImages.length }}</span> 个文件，
 						共 <span class="text-cyber-accent font-bold">{{ formatBytes(imagesTotalSize) }}</span>
 						<span v-if="selectedCount > 0" class="ml-4 text-cyber-secondary">
 							已选择 <span class="font-bold">{{ selectedCount }}</span> 项
@@ -69,6 +69,15 @@
 						<font-awesome-icon :icon="faRedoAlt" class="mr-2 text-cyber-primary" />
 						<span class="hidden md:inline">刷新</span>
 					</div>
+				</div>
+			</div>
+
+			<!-- 当前路径显示 -->
+			<div class="mb-4 p-3 bg-cyber-bg-dark border border-cyber-border rounded">
+				<div class="flex items-center text-sm cyber-text-dim">
+					<font-awesome-icon :icon="faFolder" class="mr-2 text-cyber-accent" />
+					<span class="mr-2">当前位置:</span>
+					<span class="text-cyber-primary font-mono">{{ getCurrentPathDisplay() }}</span>
 				</div>
 			</div>
 
@@ -132,11 +141,11 @@
 			 class="text-center py-16">
 			<div class="cyber-text-dim">
 				<font-awesome-icon :icon="faFolder" class="text-6xl mb-4 text-cyber-primary opacity-50" />
-				<div class="text-lg mb-2">暂无图片</div>
-				<div class="text-sm mb-4">当前文件夹为空，请上传图片或切换到其他文件夹</div>
+				<div class="text-lg mb-2">暂无文件</div>
+				<div class="text-sm mb-4">当前文件夹为空，请上传文件或切换到其他文件夹</div>
 				<div class="text-xs cyber-text-dim">
 					<span class="inline-block px-3 py-2 bg-cyber-card border border-cyber-border rounded">
-						💡 提示：可以直接拖拽图片到此页面进行上传
+						💡 提示：可以直接拖拽任意文件到此页面进行上传
 					</span>
 				</div>
 			</div>
@@ -324,12 +333,33 @@ const listImages = () => {
 const getParentPath = (currentPath: string) => {
   if (currentPath === '/') return '/'
   
-  const path = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath
-  const parts = path.split('/')
+  // 标准化路径：移除结尾的斜杠
+  const normalizedPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath
   
-  if (parts.length <= 2) return '/'
+  // 如果是根目录下的直接子文件夹，返回根目录
+  if (!normalizedPath.includes('/') || normalizedPath.split('/').length === 2) {
+    return '/'
+  }
   
-  return parts.slice(0, -1).join('/') + '/'
+  // 获取父路径
+  const lastSlashIndex = normalizedPath.lastIndexOf('/')
+  const parentPath = normalizedPath.substring(0, lastSlashIndex)
+  
+  // 确保返回的路径以/结尾
+  return parentPath === '' ? '/' : parentPath + '/'
+}
+
+// 获取当前路径显示
+const getCurrentPathDisplay = () => {
+  if (delimiter.value === '/') {
+    return '/ (根目录)'
+  }
+  
+  // 标准化路径显示
+  const path = delimiter.value.endsWith('/') ? delimiter.value.slice(0, -1) : delimiter.value
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path
+  
+  return `/${cleanPath}/`
 }
 
 // 拖拽上传相关函数
@@ -355,16 +385,16 @@ const onDrop = async (e: DragEvent) => {
 		return
 	}
 	
-	// 过滤出图片文件
-	const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'))
-	if (imageFiles.length === 0) {
-		ElMessage.warning('请拖拽图片文件')
+	// 接受所有文件类型，不再限制为图片
+	const uploadFiles = Array.from(files)
+	if (uploadFiles.length === 0) {
+		ElMessage.warning('请拖拽文件')
 		return
 	}
 	
 	// 检查文件大小限制
 	const maxSize = 20 * 1024 * 1024 // 20MB
-	const oversizedFiles = imageFiles.filter(file => file.size > maxSize)
+	const oversizedFiles = uploadFiles.filter(file => file.size > maxSize)
 	if (oversizedFiles.length > 0) {
 		ElMessage.error(`以下文件超过20MB限制: ${oversizedFiles.map(f => f.name).join(', ')}`)
 		return
@@ -374,7 +404,7 @@ const onDrop = async (e: DragEvent) => {
 	
 	try {
 		const formData = new FormData()
-		imageFiles.forEach(file => {
+		uploadFiles.forEach(file => {
 			formData.append('files', file)
 		})
 		// 上传到当前文件夹
@@ -382,9 +412,9 @@ const onDrop = async (e: DragEvent) => {
 		
 		const uploadedItems = await requestUploadImages(formData)
 		
-		ElMessage.success(`🎉 成功上传 ${uploadedItems.length} 张图片到 ${delimiter.value === '/' ? '根目录' : delimiter.value.replace('/', '')}`)
+		ElMessage.success(`🎉 成功上传 ${uploadedItems.length} 个文件到 ${delimiter.value === '/' ? '根目录' : delimiter.value.replace('/', '')}`)
 		
-		// 刷新图片列表
+		// 刷新文件列表
 		listImages()
 	} catch (error) {
 		console.error('Upload failed:', error)
@@ -440,11 +470,11 @@ const showExportDialog = () => {
           <label class="block text-sm font-medium cyber-text mb-2">选择导出格式：</label>
           <select id="exportType" class="cyber-select w-full p-3 bg-cyber-bg-dark border border-cyber-border rounded text-cyber-text">
             <option value="direct">📎 Direct Link</option>
-            <option value="webp">🖼️ WebP Link</option>
+            <option value="webp">🖼️ WebP/EO Link</option>
             <option value="html-direct">🌐 HTML (Direct Link)</option>
-            <option value="html-webp">🌐 HTML (WebP Link)</option>
+            <option value="html-webp">🌐 HTML (WebP/EO Link)</option>
             <option value="markdown-direct">📝 Markdown (Direct Link)</option>
-            <option value="markdown-webp">📝 Markdown (WebP Link)</option>
+            <option value="markdown-webp">📝 Markdown (WebP/EO Link)</option>
           </select>
         </div>
         <div class="text-xs cyber-text-dim">
@@ -560,23 +590,20 @@ const getSelectedItems = async (): Promise<SelectedItem[]> => {
     })
   }
   
-  // 添加选中的文件夹
+  // 添加选中的文件夹（递归获取所有子文件夹的文件）
   for (const folderPath of selectedFolders.value) {
     try {
-      // 获取文件夹内的图片
-      const folderData = await requestListImages({
-        limit: 1000,
-        delimiter: folderPath
-      })
+      // 递归获取文件夹及其子文件夹内的所有文件
+      const allFiles = await getAllFilesInFolder(folderPath)
       
       items.push({
         type: 'folder',
         key: folderPath,
         name: folderPath === '/' ? '根目录' : folderPath.replace('/', ''),
-        items: folderData.list
+        items: allFiles
       })
     } catch (error) {
-      console.error(`Failed to get images from folder ${folderPath}:`, error)
+      console.error(`Failed to get files from folder ${folderPath}:`, error)
       // 如果获取失败，添加一个空的文件夹项
       items.push({
         type: 'folder',
@@ -588,6 +615,45 @@ const getSelectedItems = async (): Promise<SelectedItem[]> => {
   }
   
   return items
+}
+
+// 递归获取文件夹及其子文件夹中的所有文件
+const getAllFilesInFolder = async (folderPath: string): Promise<ImgItem[]> => {
+  const allFiles: ImgItem[] = []
+  
+  try {
+    // 获取文件夹内容（不使用delimiter来获取所有子文件夹的内容）
+    const folderData = await requestListImages({
+      limit: 1000,
+      delimiter: folderPath,
+      includeSubfolders: true // 如果API支持的话
+    })
+    
+    // 如果API不支持includeSubfolders，我们需要手动递归
+    // 先获取当前文件夹的直接内容
+    const directContent = await requestListImages({
+      limit: 1000,
+      delimiter: folderPath
+    })
+    
+    // 添加直接文件
+    allFiles.push(...directContent.list)
+    
+    // 递归获取子文件夹的内容
+    if (directContent.prefixes && directContent.prefixes.length > 0) {
+      for (const subFolderPath of directContent.prefixes) {
+        // 避免无限递归，确保子文件夹路径不同于当前路径
+        if (subFolderPath !== folderPath) {
+          const subFolderFiles = await getAllFilesInFolder(subFolderPath)
+          allFiles.push(...subFolderFiles)
+        }
+      }
+    }
+  } catch (error) {
+    console.error(`Failed to get files from folder ${folderPath}:`, error)
+  }
+  
+  return allFiles
 }
 
 // 批量删除

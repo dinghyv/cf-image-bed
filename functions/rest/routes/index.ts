@@ -126,10 +126,13 @@ router.post('/list', auth, async (req: Request, env: Env) => {
     })
     
     const urls = imageObjects.map(it => {
+        // 判断是否为图片文件
+        const isImageFile = it.key.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg|ico|tiff)$/i)
+        
         return <ImgItem>{
             url: `/rest/${it.key}`,
             copyUrl: `${env.COPY_URL}/${it.key}`,
-            webpUrl: `${env.WEB_URL}/${it.key}`,
+            webpUrl: isImageFile ? `${env.WEB_URL}/${it.key}` : `${env.WEB_URL}/${it.key}?eo`,
             key: it.key,
             size: it.size
         }
@@ -246,11 +249,14 @@ router.post('/upload', auth, async (req: Request, env: Env) => {
             httpMetadata: header,
         }) as R2Object
         if (object || object.key) {
+            // 判断是否为图片文件
+            const isImageFile = object.key.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg|ico|tiff)$/i)
+            
             urls.push({
                 key: object.key,
                 size: object.size,
                 copyUrl: `${env.COPY_URL}/${object.key}`,
-                webpUrl: `${env.WEB_URL}/${object.key}`,
+                webpUrl: isImageFile ? `${env.WEB_URL}/${object.key}` : `${env.WEB_URL}/${object.key}?eo`,
                 url: `/rest/${object.key}`,
                 filename: item.name
             })
