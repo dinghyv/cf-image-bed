@@ -980,7 +980,9 @@ body::after {
 }
 
 /* 强制覆盖Element Plus Dialog样式 */
-:deep(.el-dialog) {
+.el-dialog,
+:deep(.el-dialog),
+.cyber-dialog {
 	background: var(--cyber-bg-card) !important;
 	border: 1px solid var(--cyber-border) !important;
 	border-radius: 12px !important;
@@ -990,7 +992,9 @@ body::after {
 		0 0 60px rgba(0, 255, 136, 0.1) !important;
 }
 
-:deep(.el-dialog__header) {
+.el-dialog__header,
+:deep(.el-dialog__header),
+.cyber-dialog .el-dialog__header {
 	background: var(--cyber-bg-dark) !important;
 	border-bottom: 1px solid var(--cyber-border) !important;
 	color: var(--cyber-text) !important;
@@ -998,42 +1002,94 @@ body::after {
 	padding: 20px 24px !important;
 }
 
-:deep(.el-dialog__title) {
+.el-dialog__title,
+:deep(.el-dialog__title),
+.cyber-dialog .el-dialog__title {
 	color: var(--cyber-text) !important;
 	font-weight: bold !important;
 	text-shadow: 0 0 10px rgba(0, 255, 136, 0.3) !important;
 }
 
-:deep(.el-dialog__body) {
+.el-dialog__body,
+:deep(.el-dialog__body),
+.cyber-dialog .el-dialog__body {
 	background: var(--cyber-bg-card) !important;
 	color: var(--cyber-text) !important;
 	padding: 24px !important;
 }
 
-:deep(.el-dialog__footer) {
+.el-dialog__footer,
+:deep(.el-dialog__footer),
+.cyber-dialog .el-dialog__footer {
 	background: var(--cyber-bg-dark) !important;
 	border-top: 1px solid var(--cyber-border) !important;
 	border-radius: 0 0 12px 12px !important;
 	padding: 16px 24px !important;
 }
 
-:deep(.el-dialog__headerbtn) {
+.el-dialog__headerbtn,
+:deep(.el-dialog__headerbtn),
+.cyber-dialog .el-dialog__headerbtn {
 	top: 20px !important;
 	right: 24px !important;
 }
 
-:deep(.el-dialog__close) {
+.el-dialog__close,
+:deep(.el-dialog__close),
+.cyber-dialog .el-dialog__close {
 	color: var(--cyber-text-dim) !important;
 }
 
-:deep(.el-dialog__close:hover) {
+.el-dialog__close:hover,
+:deep(.el-dialog__close:hover),
+.cyber-dialog .el-dialog__close:hover {
 	color: var(--cyber-primary) !important;
 }
 
 /* 覆盖Dialog遮罩 */
+.el-overlay,
 :deep(.el-overlay) {
 	background-color: rgba(0, 0, 0, 0.85) !important;
 	backdrop-filter: blur(8px) !important;
+}
+
+/* 强制覆盖上传弹窗内的按钮样式 */
+.cyber-dialog .el-button,
+:deep(.cyber-dialog .el-button) {
+	background: var(--cyber-bg-card) !important;
+	border: 1px solid var(--cyber-border) !important;
+	color: var(--cyber-text) !important;
+	border-radius: 6px !important;
+}
+
+.cyber-dialog .el-button--primary,
+:deep(.cyber-dialog .el-button--primary),
+.cyber-btn-primary {
+	background: linear-gradient(45deg, var(--cyber-primary), var(--cyber-accent)) !important;
+	border: 1px solid var(--cyber-primary) !important;
+	color: var(--cyber-bg-dark) !important;
+	box-shadow: 0 0 10px rgba(0, 255, 136, 0.3) !important;
+}
+
+.cyber-dialog .el-button--primary:hover,
+:deep(.cyber-dialog .el-button--primary:hover),
+.cyber-btn-primary:hover {
+	background: linear-gradient(45deg, var(--cyber-accent), var(--cyber-primary)) !important;
+	box-shadow: 0 0 20px rgba(0, 255, 136, 0.6) !important;
+	transform: translateY(-2px) !important;
+}
+
+.cyber-dialog .el-button--danger,
+:deep(.cyber-dialog .el-button--danger) {
+	background: var(--cyber-bg-card) !important;
+	border: 1px solid var(--cyber-secondary) !important;
+	color: var(--cyber-secondary) !important;
+}
+
+.cyber-dialog .el-button--danger:hover,
+:deep(.cyber-dialog .el-button--danger:hover) {
+	background: var(--cyber-secondary) !important;
+	color: var(--cyber-bg-dark) !important;
 }
 
 /* 赛博朋克消息提示样式 */

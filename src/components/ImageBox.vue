@@ -1,5 +1,9 @@
 <template>
-	<div class="cyber-card w-full overflow-hidden relative group" @contextmenu.prevent="showContextMenu">
+	<div class="cyber-card w-full overflow-hidden relative group" 
+		 @contextmenu.prevent="showContextMenu"
+		 @touchstart="onTouchStart"
+		 @touchend="onTouchEnd"
+		 @touchmove="onTouchMove">
 		<loading-overlay :loading="loading" />
 
 		<!-- 文件容器 -->
@@ -96,7 +100,7 @@
 		<!-- 右键菜单 -->
 		<div 
 			v-if="showContextMenuFlag"
-			class="fixed bg-cyber-bg-dark border border-cyber-border rounded-lg shadow-lg z-50 py-2 min-w-32"
+			class="fixed bg-cyber-bg-dark/90 backdrop-blur-md border border-cyber-border rounded-lg shadow-lg z-50 py-2 min-w-32"
 			:style="{ left: contextMenuX + 'px', top: contextMenuY + 'px' }"
 			@click.stop
 		>
@@ -138,7 +142,7 @@ import { faXmark, faTrash, faCopy, faEye, faDownload, faFile, faFileText, faFile
 import copy from 'copy-to-clipboard'
 import formatBytes from '../utils/format-bytes'
 import {ElTooltip, ElDivider, ElPopconfirm, ElImage, ElMessage, ElMessageBox} from 'element-plus'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 
 const props = defineProps<{
@@ -160,6 +164,12 @@ const loading = ref(true)
 const showContextMenuFlag = ref(false)
 const contextMenuX = ref(0)
 const contextMenuY = ref(0)
+
+// 移动端长按相关
+const longPressTimer = ref<number | null>(null)
+const touchStartTime = ref(0)
+const touchStartPos = ref({ x: 0, y: 0 })
+const isLongPress = ref(false)
 
 // 判断是否为图片文件
 const isImageFile = computed(() => {
@@ -204,6 +214,14 @@ onMounted(() => {
   if (!isImageFile.value) {
     loading.value = false
   }
+})
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  if (longPressTimer.value) {
+    clearTimeout(longPressTimer.value)
+  }
+  hideContextMenu()
 })
 const copyLink = (link : string) => {
   const res = copy(link)
@@ -279,24 +297,88 @@ const downloadFile = () => {
 }
 
 // 显示右键菜单
-const showContextMenu = (event: MouseEvent) => {
+const showContextMenu = (event: MouseEvent | TouchEvent) => {
   event.preventDefault()
   event.stopPropagation()
   
-  contextMenuX.value = event.clientX
-  contextMenuY.value = event.clientY
+  let clientX: number, clientY: number
+  
+  if (event instanceof MouseEvent) {
+    clientX = event.clientX
+    clientY = event.clientY
+  } else {
+    // TouchEvent
+    const touch = event.touches[0] || event.changedTouches[0]
+    clientX = touch.clientX
+    clientY = touch.clientY
+  }
+  
+  contextMenuX.value = clientX
+  contextMenuY.value = clientY
   showContextMenuFlag.value = true
   
   // 立即添加全局点击监听器来隐藏菜单
-  setTimeout(() => {
-    document.addEventListener('click', hideContextMenu)
-  }, 0)
+  document.addEventListener('click', hideContextMenu, { once: true })
+  document.addEventListener('touchstart', hideContextMenu, { once: true })
 }
 
 // 隐藏右键菜单
 const hideContextMenu = () => {
   showContextMenuFlag.value = false
   document.removeEventListener('click', hideContextMenu)
+  document.removeEventListener('touchstart', hideContextMenu)
+}
+
+// 移动端长按事件处理
+const onTouchStart = (event: TouchEvent) => {
+  touchStartTime.value = Date.now()
+  const touch = event.touches[0]
+  touchStartPos.value = { x: touch.clientX, y: touch.clientY }
+  isLongPress.value = false
+  
+  // 清除之前的定时器
+  if (longPressTimer.value) {
+    clearTimeout(longPressTimer.value)
+  }
+  
+  // 设置长按定时器（800ms）
+  longPressTimer.value = window.setTimeout(() => {
+    isLongPress.value = true
+    // 触发右键菜单
+    showContextMenu(event)
+    // 添加振动反馈（如果设备支持）
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50)
+    }
+  }, 800)
+}
+
+const onTouchMove = (event: TouchEvent) => {
+  if (!longPressTimer.value) return
+  
+  const touch = event.touches[0]
+  const deltaX = Math.abs(touch.clientX - touchStartPos.value.x)
+  const deltaY = Math.abs(touch.clientY - touchStartPos.value.y)
+  
+  // 如果移动距离超过10px，取消长按
+  if (deltaX > 10 || deltaY > 10) {
+    clearTimeout(longPressTimer.value)
+    longPressTimer.value = null
+  }
+}
+
+const onTouchEnd = (event: TouchEvent) => {
+  if (longPressTimer.value) {
+    clearTimeout(longPressTimer.value)
+    longPressTimer.value = null
+  }
+  
+  // 如果是长按触发的结束事件，阻止默认的点击行为
+  if (isLongPress.value) {
+    event.preventDefault()
+    event.stopPropagation()
+    isLongPress.value = false
+  }
 }
 
 const confirmDelete = () => {
