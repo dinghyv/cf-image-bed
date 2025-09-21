@@ -339,15 +339,27 @@ defineExpose({
 
 <style scoped>
 .cyber-badge {
-  @apply bg-cyber-primary text-cyber-bg px-2 py-1 rounded-full text-xs font-bold;
+  background: var(--cyber-primary);
+  color: var(--cyber-bg-dark);
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .cyber-progress-bar {
-  @apply w-full bg-cyber-bg-dark border border-cyber-border rounded-full h-2 overflow-hidden;
+  width: 100%;
+  background: var(--cyber-bg-dark);
+  border: 1px solid var(--cyber-border);
+  border-radius: 9999px;
+  height: 8px;
+  overflow: hidden;
 }
 
 .cyber-progress-fill {
-  @apply h-full bg-gradient-to-r from-cyber-primary to-cyber-accent transition-all duration-300;
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyber-primary), var(--cyber-accent));
+  transition: all 0.3s ease;
 }
 
 .animate-pulse {

@@ -1196,10 +1196,17 @@ const onUploadComplete = () => {
 
 <style scoped>
 .cyber-progress-bar {
-  @apply w-full bg-cyber-bg-dark border border-cyber-border rounded-full h-2 overflow-hidden;
+  width: 100%;
+  background: var(--cyber-bg-dark);
+  border: 1px solid var(--cyber-border);
+  border-radius: 9999px;
+  height: 8px;
+  overflow: hidden;
 }
 
 .cyber-progress-fill {
-  @apply h-full bg-gradient-to-r from-cyber-primary to-cyber-accent transition-all duration-300;
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyber-primary), var(--cyber-accent));
+  transition: all 0.3s ease;
 }
 </style>
