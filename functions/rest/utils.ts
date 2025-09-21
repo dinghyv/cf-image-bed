@@ -88,7 +88,7 @@ export function checkFileType(val: string): boolean {
 
 // 获取文件名
 export async function getFilePath(val: string, filename: string, time: number, targetFolder: string = "/"): Promise<string> {
-    // 使用处理过的文件名，如果没有则生成随机文件名
+    // 直接使用原始文件名，如果没有则生成随机文件名
     let fileName = filename
     if (!fileName) {
         const rand = Math.floor(Math.random() * 100000)
@@ -122,15 +122,8 @@ export async function getFilePath(val: string, filename: string, time: number, t
         return `${folderPath}/${fileName}`
     }
     
-    // 根目录仍然使用年份月份结构
-    let date = new Date()
-    const year = date.getFullYear() //获取完整的年份(4位)
-    let month = date.getMonth() + 1 //获取当前月份(0-11,0代表1月)
-    if (month < 10) {
-        month = `0${month}`;
-    }
-    
-    return `${year}/${month}/${fileName}`
+    // 根目录也直接使用文件名，不再使用年份月份结构
+    return fileName
 
 }
 

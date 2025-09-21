@@ -77,7 +77,26 @@
 				<div class="flex items-center text-sm cyber-text-dim">
 					<font-awesome-icon :icon="faFolder" class="mr-2 text-cyber-accent" />
 					<span class="mr-2">当前位置:</span>
-					<span class="text-cyber-primary font-mono">{{ getCurrentPathDisplay() }}</span>
+					<div class="flex items-center text-cyber-primary font-mono">
+						<span 
+							class="cursor-pointer hover:text-cyber-accent transition-colors" 
+							@click="changeFolder('/')"
+						>/</span>
+						<template v-if="delimiter !== '/'">
+							<span 
+								v-for="(segment, index) in getPathSegments()" 
+								:key="index"
+								class="flex items-center"
+							>
+								<span 
+									class="cursor-pointer hover:text-cyber-accent transition-colors mx-1"
+									@click="navigateToSegment(index)"
+								>{{ segment }}</span>
+								<span v-if="index < getPathSegments().length - 1">/</span>
+							</span>
+							<span>/</span>
+						</template>
+					</div>
 				</div>
 			</div>
 
@@ -100,7 +119,7 @@
 					</div>
 					<font-awesome-icon :icon="faFolder" class="text-2xl mr-2" />
 					<span v-if="it !== '/'" class="cyber-text">{{ getFolderDisplayName(it) }}</span>
-					<span v-else class="cyber-text">根目录</span>
+					<span v-else class="cyber-text">../</span>
 				</div>
 			</div>
 		</div>
@@ -349,17 +368,21 @@ const getParentPath = (currentPath: string) => {
   return parentPath === '' ? '/' : parentPath + '/'
 }
 
-// 获取当前路径显示
-const getCurrentPathDisplay = () => {
-  if (delimiter.value === '/') {
-    return '/ (根目录)'
-  }
+// 获取路径分段
+const getPathSegments = () => {
+  if (delimiter.value === '/') return []
   
-  // 标准化路径显示
   const path = delimiter.value.endsWith('/') ? delimiter.value.slice(0, -1) : delimiter.value
   const cleanPath = path.startsWith('/') ? path.substring(1) : path
   
-  return `/${cleanPath}/`
+  return cleanPath.split('/').filter(segment => segment.length > 0)
+}
+
+// 导航到指定分段
+const navigateToSegment = (index: number) => {
+  const segments = getPathSegments()
+  const targetPath = '/' + segments.slice(0, index + 1).join('/') + '/'
+  changeFolder(targetPath)
 }
 
 // 拖拽上传相关函数

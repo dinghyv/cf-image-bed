@@ -2,15 +2,29 @@
 	<div class="cyber-card w-full overflow-hidden relative group">
 		<loading-overlay :loading="loading" />
 
-		<!-- 图片容器 -->
+		<!-- 文件容器 -->
 		<div class="relative overflow-hidden cursor-pointer" @click="showPreview">
+			<!-- 图片文件 -->
 			<el-image
+				v-if="isImageFile"
 				class="block w-full h-40 lg:h-60 transition-transform duration-300 group-hover:scale-105"
 				:src="src"
 				fit="cover"
 				hide-on-click-modal
 				@load="loading = false"
+				@error="handleImageError"
 			/>
+			
+			<!-- 非图片文件 -->
+			<div 
+				v-else
+				class="w-full h-40 lg:h-60 flex items-center justify-center bg-cyber-bg-dark border-2 border-cyber-border transition-transform duration-300 group-hover:scale-105"
+			>
+				<div class="text-center">
+					<font-awesome-icon :icon="getFileIcon()" class="text-4xl text-cyber-primary mb-2" />
+					<div class="text-sm text-cyber-text-dim">{{ getFileType() }}</div>
+				</div>
+			</div>
 			
 			<!-- 悬停时的光效 -->
 			<div class="absolute inset-0 bg-gradient-to-t from-cyber-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -103,11 +117,11 @@
 </template>
 
 <script setup lang="ts">
-import { faXmark, faTrash, faCopy, faEye, faDownload } from '@fortawesome/free-solid-svg-icons'
+import { faXmark, faTrash, faCopy, faEye, faDownload, faFile, faFileText, faFilePdf, faFileArchive, faFileVideo, faFileAudio, faFileCode } from '@fortawesome/free-solid-svg-icons'
 import copy from 'copy-to-clipboard'
 import formatBytes from '../utils/format-bytes'
 import {ElTooltip, ElDivider, ElPopconfirm, ElImage, ElMessage, ElMessageBox} from 'element-plus'
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 
 const props = defineProps<{
@@ -124,6 +138,44 @@ const emit = defineEmits(['delete'])
 
 const imageError = ref(false)
 const loading = ref(true)
+
+// 判断是否为图片文件
+const isImageFile = computed(() => {
+  return props.name.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg|ico|tiff)$/i) !== null
+})
+
+// 处理图片加载错误
+const handleImageError = () => {
+  imageError.value = true
+  loading.value = false
+}
+
+// 获取文件图标
+const getFileIcon = () => {
+  const ext = props.name.split('.').pop()?.toLowerCase() || ''
+  
+  if (['pdf'].includes(ext)) return faFilePdf
+  if (['txt', 'md', 'doc', 'docx'].includes(ext)) return faFileText
+  if (['zip', 'rar', '7z', 'gz'].includes(ext)) return faFileArchive
+  if (['mp4', 'avi', 'mov', 'mkv'].includes(ext)) return faFileVideo
+  if (['mp3', 'wav', 'flac'].includes(ext)) return faFileAudio
+  if (['js', 'ts', 'html', 'css', 'json', 'xml'].includes(ext)) return faFileCode
+  
+  return faFile
+}
+
+// 获取文件类型显示
+const getFileType = () => {
+  const ext = props.name.split('.').pop()?.toLowerCase() || ''
+  return ext.toUpperCase()
+}
+
+// 对于非图片文件，立即设置loading为false
+onMounted(() => {
+  if (!isImageFile.value) {
+    loading.value = false
+  }
+})
 const copyLink = (link : string) => {
   const res = copy(link)
   if (res) {

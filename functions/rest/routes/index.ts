@@ -239,9 +239,8 @@ router.post('/upload', auth, async (req: Request, env: Env) => {
 	const originFileName = item.name
         const time = new Date().getTime()
         
-        // 处理文件名：替换空格为连字符，添加时间戳
-        const processedFileName = processFileName(originFileName, time)
-        const objecPath = await getFilePath(fileType, processedFileName, time, targetFolder)
+        // 使用原始文件名，不添加时间戳
+        const objecPath = await getFilePath(fileType, originFileName, time, targetFolder)
         const header = new Headers()
         header.set("content-type", fileType)
         header.set("content-length", `${item.size}`)
