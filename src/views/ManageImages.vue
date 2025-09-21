@@ -61,6 +61,10 @@
 						<span class="hidden md:inline">批量删除</span>
 					</div>
 					
+					<div class="cyber-btn px-4 py-2 cursor-pointer flex items-center" @click="showUploadDialog">
+						<font-awesome-icon :icon="faUpload" class="mr-2 text-cyber-primary" />
+						<span class="hidden md:inline">上传</span>
+					</div>
 					<div class="cyber-btn px-4 py-2 cursor-pointer flex items-center" @click="addFolder">
 						<font-awesome-icon :icon="faFolderPlus" class="mr-2 text-cyber-accent" />
 						<span class="hidden md:inline">新建文件夹</span>
@@ -102,7 +106,26 @@
 
 			<!-- 文件夹导航 -->
 			<div class="flex items-center justify-start flex-wrap gap-2">
-				<div v-for="it in prefixes" 
+				<!-- 返回上级按钮 -->
+				<div v-if="delimiter !== '/'"
+					 :class="{
+						'cyber-folder selected': isMultiSelect && selectedFolders.includes(getParentPath(delimiter)),
+						'cyber-folder': !isMultiSelect || !selectedFolders.includes(getParentPath(delimiter))
+					 }"
+					 @click="isMultiSelect ? toggleFolderSelection(getParentPath(delimiter)) : changeFolder(getParentPath(delimiter))">
+					<!-- 多选模式下的复选框 -->
+					<div v-if="isMultiSelect" class="mr-2">
+						<font-awesome-icon 
+							:icon="selectedFolders.includes(getParentPath(delimiter)) ? faCheckSquare : faSquare" 
+							class="text-cyber-primary" 
+						/>
+					</div>
+					<font-awesome-icon :icon="faFolder" class="text-2xl mr-2" />
+					<span class="cyber-text">../</span>
+				</div>
+				
+				<!-- 子文件夹 -->
+				<div v-for="it in prefixes.filter(p => p !== '/' && p !== getParentPath(delimiter))" 
 					 :key="it"
 					 :class="{
 						'cyber-folder active': delimiter === it,
@@ -118,8 +141,7 @@
 						/>
 					</div>
 					<font-awesome-icon :icon="faFolder" class="text-2xl mr-2" />
-					<span v-if="it !== '/'" class="cyber-text">{{ getFolderDisplayName(it) }}</span>
-					<span v-else class="cyber-text">../</span>
+					<span class="cyber-text">{{ getFolderDisplayName(it) }}</span>
 				</div>
 			</div>
 		</div>
@@ -169,6 +191,95 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- 上传弹窗 -->
+		<el-dialog
+			v-model="showUploadModal"
+			title="上传文件"
+			width="600px"
+			:show-close="true"
+			:close-on-click-modal="false"
+			custom-class="cyber-dialog"
+		>
+			<div class="upload-dialog-content">
+				<div class="mb-4">
+					<div class="text-sm cyber-text-dim mb-2">
+						上传到：<span class="text-cyber-primary font-mono">{{ getCurrentPathDisplay() }}</span>
+					</div>
+				</div>
+
+				<!-- 文件拖拽区域 -->
+				<div 
+					class="upload-drop-zone border-2 border-dashed border-cyber-border rounded-lg p-8 text-center transition-colors"
+					:class="{ 'border-cyber-primary bg-cyber-primary/10': isDragOverModal }"
+					@dragover.prevent="onModalDragOver"
+					@dragleave.prevent="onModalDragLeave"
+					@drop.prevent="onModalDrop"
+				>
+					<div class="text-4xl mb-4 text-cyber-primary">
+						<font-awesome-icon :icon="faCloudUploadAlt" />
+					</div>
+					<div class="cyber-text text-lg mb-2">拖拽文件到此处</div>
+					<div class="cyber-text-dim text-sm mb-4">或者</div>
+					<el-button 
+						type="primary" 
+						@click="triggerFileSelect"
+						class="cyber-btn-primary"
+					>
+						<font-awesome-icon :icon="faFolderOpen" class="mr-2" />
+						选择文件
+					</el-button>
+					<input
+						ref="fileInputRef"
+						type="file"
+						multiple
+						style="display: none"
+						@change="onFileSelect"
+					>
+				</div>
+
+				<!-- 选中的文件列表 -->
+				<div v-if="selectedFiles.length > 0" class="mt-4">
+					<div class="text-sm cyber-text mb-2">选中的文件 ({{ selectedFiles.length }})</div>
+					<div class="max-h-32 overflow-y-auto">
+						<div 
+							v-for="(file, index) in selectedFiles" 
+							:key="index"
+							class="flex items-center justify-between p-2 bg-cyber-bg-dark rounded mb-1"
+						>
+							<div class="flex items-center flex-1">
+								<font-awesome-icon :icon="faFile" class="text-cyber-accent mr-2" />
+								<span class="text-sm cyber-text truncate">{{ file.name }}</span>
+								<span class="text-xs cyber-text-dim ml-2">({{ formatBytes(file.size) }})</span>
+							</div>
+							<el-button 
+								size="small" 
+								type="danger" 
+								@click="removeFile(index)"
+								class="ml-2"
+							>
+								<font-awesome-icon :icon="faTrash" />
+							</el-button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<template #footer>
+				<div class="flex justify-end space-x-3">
+					<el-button @click="closeUploadDialog">取消</el-button>
+					<el-button 
+						type="primary" 
+						@click="uploadFiles"
+						:disabled="selectedFiles.length === 0 || modalUploading"
+						:loading="modalUploading"
+					>
+						<font-awesome-icon :icon="faUpload" class="mr-2" />
+						上传 {{ selectedFiles.length > 0 ? `(${selectedFiles.length})` : '' }}
+					</el-button>
+				</div>
+			</template>
+		</el-dialog>
 	</div>
 </template>
 
@@ -179,8 +290,8 @@ import formatBytes from '../utils/format-bytes'
 import { computed, onMounted, ref } from 'vue'
 import type { ImgItem, ImgReq, Folder, ExportOptions, SelectedItem, MoveOptions } from '../utils/types'
 import ImageBox from '../components/ImageBox.vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
-import { faRedoAlt, faFolder, faFolderPlus, faCog, faCheckSquare, faSquare, faDownload, faTrash, faFolderOpen, faUpload } from '@fortawesome/free-solid-svg-icons'
+import { ElMessageBox, ElMessage, ElDialog, ElButton } from 'element-plus'
+import { faRedoAlt, faFolder, faFolderPlus, faCog, faCheckSquare, faSquare, faDownload, faTrash, faFolderOpen, faUpload, faCloudUploadAlt, faFile } from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import copy from 'copy-to-clipboard'
 
@@ -192,6 +303,13 @@ const isMultiSelect = ref(false)
 const selectedFolders = ref<string[]>([])
 const isDragOver = ref(false)
 const uploadLoading = ref(false)
+
+// 上传弹窗相关
+const showUploadModal = ref(false)
+const selectedFiles = ref<File[]>([])
+const isDragOverModal = ref(false)
+const modalUploading = ref(false)
+const fileInputRef = ref<HTMLInputElement>()
 
 const imagesTotalSize = computed(() =>
     uploadedImages.value.reduce((total, item) => total + item.size, 0)
@@ -383,6 +501,19 @@ const navigateToSegment = (index: number) => {
   const segments = getPathSegments()
   const targetPath = '/' + segments.slice(0, index + 1).join('/') + '/'
   changeFolder(targetPath)
+}
+
+// 获取当前路径显示（用于上传弹窗）
+const getCurrentPathDisplay = () => {
+  if (delimiter.value === '/') {
+    return '/ (根目录)'
+  }
+  
+  // 标准化路径显示
+  const path = delimiter.value.endsWith('/') ? delimiter.value.slice(0, -1) : delimiter.value
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path
+  
+  return `/${cleanPath}/`
 }
 
 // 拖拽上传相关函数
@@ -829,5 +960,87 @@ const moveImages = (targetFolder: string, images: ImgItem[]) => {
       loading.value = false
     })
   }).catch(() => {})
+}
+
+// 上传弹窗相关方法
+const showUploadDialog = () => {
+  showUploadModal.value = true
+  selectedFiles.value = []
+}
+
+const closeUploadDialog = () => {
+  showUploadModal.value = false
+  selectedFiles.value = []
+  isDragOverModal.value = false
+}
+
+const triggerFileSelect = () => {
+  fileInputRef.value?.click()
+}
+
+const onFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  if (files) {
+    selectedFiles.value = [...selectedFiles.value, ...Array.from(files)]
+  }
+  // 清空input的值，允许重复选择相同文件
+  target.value = ''
+}
+
+const onModalDragOver = () => {
+  isDragOverModal.value = true
+}
+
+const onModalDragLeave = () => {
+  isDragOverModal.value = false
+}
+
+const onModalDrop = (event: DragEvent) => {
+  isDragOverModal.value = false
+  const files = event.dataTransfer?.files
+  if (files) {
+    selectedFiles.value = [...selectedFiles.value, ...Array.from(files)]
+  }
+}
+
+const removeFile = (index: number) => {
+  selectedFiles.value.splice(index, 1)
+}
+
+const uploadFiles = async () => {
+  if (selectedFiles.value.length === 0) return
+  
+  // 检查文件大小限制
+  const maxSize = 20 * 1024 * 1024 // 20MB
+  const oversizedFiles = selectedFiles.value.filter(file => file.size > maxSize)
+  if (oversizedFiles.length > 0) {
+    ElMessage.error(`以下文件超过20MB限制: ${oversizedFiles.map(f => f.name).join(', ')}`)
+    return
+  }
+  
+  modalUploading.value = true
+  
+  try {
+    const formData = new FormData()
+    selectedFiles.value.forEach(file => {
+      formData.append('files', file)
+    })
+    // 上传到当前文件夹
+    formData.append('folder', delimiter.value)
+    
+    const uploadedItems = await requestUploadImages(formData)
+    
+    ElMessage.success(`🎉 成功上传 ${uploadedItems.length} 个文件到 ${delimiter.value === '/' ? '根目录' : delimiter.value.replace('/', '')}`)
+    
+    // 关闭弹窗并刷新文件列表
+    closeUploadDialog()
+    listImages()
+  } catch (error) {
+    console.error('Upload failed:', error)
+    ElMessage.error(`上传失败: ${error}`)
+  } finally {
+    modalUploading.value = false
+  }
 }
 </script>

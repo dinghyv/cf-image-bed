@@ -1094,4 +1094,41 @@ body::after {
 	.multi-select-checkbox {
 		@apply w-5 h-5;
 	}
+
+	/* 上传弹窗样式 */
+	:deep(.cyber-dialog .el-dialog__header) {
+		background: var(--cyber-bg-dark);
+		border-bottom: 1px solid var(--cyber-border);
+		color: var(--cyber-text);
+	}
+
+	:deep(.cyber-dialog .el-dialog__body) {
+		background: var(--cyber-bg-card);
+		color: var(--cyber-text);
+	}
+
+	:deep(.cyber-dialog .el-dialog__footer) {
+		background: var(--cyber-bg-dark);
+		border-top: 1px solid var(--cyber-border);
+	}
+
+	.upload-drop-zone {
+		transition: all 0.3s ease;
+	}
+
+	.upload-drop-zone:hover {
+		border-color: var(--cyber-primary);
+		background: rgba(var(--cyber-primary-rgb), 0.05);
+	}
+
+	:deep(.cyber-btn-primary) {
+		background: var(--cyber-primary) !important;
+		border-color: var(--cyber-primary) !important;
+		color: var(--cyber-bg-dark) !important;
+	}
+
+	:deep(.cyber-btn-primary:hover) {
+		background: var(--cyber-accent) !important;
+		border-color: var(--cyber-accent) !important;
+	}
 }
