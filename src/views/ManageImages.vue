@@ -540,34 +540,25 @@ const listImages = () => {
 
 // 获取父文件夹路径
 const getParentPath = (currentPath: string) => {
-  console.log('getParentPath called with:', currentPath)
-  
   if (currentPath === '/') {
-    console.log('Already at root, returning /')
     return '/'
   }
   
   // 标准化路径：移除结尾的斜杠
   const normalizedPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath
-  console.log('Normalized path:', normalizedPath)
   
   // 获取父路径
   const lastSlashIndex = normalizedPath.lastIndexOf('/')
-  console.log('Last slash index:', lastSlashIndex)
   
   // 如果没有找到斜杠或者是根目录下的直接子文件夹，返回根目录
   if (lastSlashIndex <= 0) {
-    console.log('Returning root directory')
     return '/'
   }
   
   const parentPath = normalizedPath.substring(0, lastSlashIndex)
-  console.log('Parent path before formatting:', parentPath)
   
   // 确保返回的路径以/结尾，但根目录除外
-  const result = parentPath === '' ? '/' : parentPath + '/'
-  console.log('Final parent path result:', result)
-  return result
+  return parentPath === '' ? '/' : parentPath + '/'
 }
 
 // 获取路径分段
@@ -577,13 +568,34 @@ const getPathSegments = () => {
   const path = delimiter.value.endsWith('/') ? delimiter.value.slice(0, -1) : delimiter.value
   const cleanPath = path.startsWith('/') ? path.substring(1) : path
   
-  return cleanPath.split('/').filter(segment => segment.length > 0)
+  console.log('getPathSegments - delimiter.value:', delimiter.value)
+  console.log('getPathSegments - path after removing trailing slash:', path)
+  console.log('getPathSegments - cleanPath after removing leading slash:', cleanPath)
+  
+  const segments = cleanPath.split('/').filter(segment => segment.length > 0)
+  console.log('getPathSegments - final segments:', segments)
+  
+  return segments
 }
 
 // 导航到指定分段
 const navigateToSegment = (index: number) => {
   const segments = getPathSegments()
-  const targetPath = '/' + segments.slice(0, index + 1).join('/') + '/'
+  console.log('Current segments:', segments)
+  console.log('Navigate to index:', index)
+  
+  if (index < 0 || index >= segments.length) {
+    console.log('Invalid index, returning')
+    return
+  }
+  
+  // 构建目标路径
+  const targetSegments = segments.slice(0, index + 1)
+  console.log('Target segments:', targetSegments)
+  
+  const targetPath = '/' + targetSegments.join('/') + '/'
+  console.log('Target path:', targetPath)
+  
   changeFolder(targetPath)
 }
 
