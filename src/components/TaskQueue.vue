@@ -108,7 +108,7 @@
             <div class="min-w-0 flex-1">
               <div class="cyber-text text-sm truncate">{{ task.file.name }}</div>
               <div class="cyber-text-dim text-xs">
-                {{ formatBytes(task.file.size) }} → {{ task.targetFolder === '/' ? '根目录' : task.targetFolder.replace('/', '') }}
+                {{ formatBytes(task.file.size) }} → {{ getDisplayPath(task.targetFolder) }}
               </div>
               <!-- 单个任务进度条 -->
               <div v-if="task.status === 'uploading' && task.progress !== undefined" class="mt-1">
@@ -327,6 +327,19 @@ const startBatchUpload = async () => {
     currentFileProgress.value = 0
     overallProgress.value = 0
   }
+}
+
+// 路径显示格式化
+const getDisplayPath = (path: string) => {
+  if (path === '/') {
+    return '根目录'
+  }
+  
+  // 标准化路径显示
+  const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path
+  const normalizedPath = cleanPath.startsWith('/') ? cleanPath.substring(1) : cleanPath
+  
+  return `/${normalizedPath}/`
 }
 
 // 暴露方法给父组件

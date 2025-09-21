@@ -540,22 +540,34 @@ const listImages = () => {
 
 // 获取父文件夹路径
 const getParentPath = (currentPath: string) => {
-  if (currentPath === '/') return '/'
+  console.log('getParentPath called with:', currentPath)
   
-  // 标准化路径：移除结尾的斜杠
-  const normalizedPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath
-  
-  // 如果是根目录下的直接子文件夹，返回根目录
-  if (!normalizedPath.includes('/') || normalizedPath.split('/').length === 2) {
+  if (currentPath === '/') {
+    console.log('Already at root, returning /')
     return '/'
   }
   
+  // 标准化路径：移除结尾的斜杠
+  const normalizedPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath
+  console.log('Normalized path:', normalizedPath)
+  
   // 获取父路径
   const lastSlashIndex = normalizedPath.lastIndexOf('/')
-  const parentPath = normalizedPath.substring(0, lastSlashIndex)
+  console.log('Last slash index:', lastSlashIndex)
   
-  // 确保返回的路径以/结尾
-  return parentPath === '' ? '/' : parentPath + '/'
+  // 如果没有找到斜杠或者是根目录下的直接子文件夹，返回根目录
+  if (lastSlashIndex <= 0) {
+    console.log('Returning root directory')
+    return '/'
+  }
+  
+  const parentPath = normalizedPath.substring(0, lastSlashIndex)
+  console.log('Parent path before formatting:', parentPath)
+  
+  // 确保返回的路径以/结尾，但根目录除外
+  const result = parentPath === '' ? '/' : parentPath + '/'
+  console.log('Final parent path result:', result)
+  return result
 }
 
 // 获取路径分段
