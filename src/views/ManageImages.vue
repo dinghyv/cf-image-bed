@@ -36,52 +36,58 @@
 				</div>
 				
 				<!-- 操作按钮 -->
-				<div class="flex items-center space-x-3">
+				<div class="flex items-center space-x-2 md:space-x-3 flex-wrap">
 					<!-- 多选模式切换 -->
-					<div class="cyber-btn px-4 py-2 cursor-pointer flex items-center" @click="toggleMultiSelect">
-						<font-awesome-icon :icon="isMultiSelect ? faCheckSquare : faSquare" class="mr-2 text-cyber-accent" />
-						<span class="hidden md:inline">{{ isMultiSelect ? '退出多选' : '多选模式' }}</span>
+					<div class="cyber-btn px-3 md:px-4 py-2 cursor-pointer flex items-center" @click="toggleMultiSelect">
+						<font-awesome-icon :icon="isMultiSelect ? faCheckSquare : faSquare" class="mr-1 md:mr-2 text-cyber-accent" />
+						<span class="text-sm md:text-base">{{ isMultiSelect ? '退出' : '多选' }}</span>
 					</div>
 					
 					<!-- 导出按钮（多选时显示） -->
-					<div v-if="isMultiSelect && selectedCount > 0" class="cyber-btn-secondary px-4 py-2 cursor-pointer flex items-center" @click="showExportDialog">
-						<font-awesome-icon :icon="faDownload" class="mr-2 text-cyber-secondary" />
-						<span class="hidden md:inline">导出链接</span>
+					<div v-if="isMultiSelect && selectedCount > 0" class="cyber-btn-secondary px-3 md:px-4 py-2 cursor-pointer flex items-center" @click="showExportDialog">
+						<font-awesome-icon :icon="faDownload" class="mr-1 md:mr-2 text-cyber-secondary" />
+						<span class="text-sm md:text-base">导出</span>
 					</div>
 					
 					<!-- 移动到文件夹按钮（多选时显示） -->
-					<div v-if="isMultiSelect && selectedCount > 0" class="cyber-btn px-4 py-2 cursor-pointer flex items-center" @click="showMoveDialog">
-						<font-awesome-icon :icon="faFolderOpen" class="mr-2 text-cyber-accent" />
-						<span class="hidden md:inline">移动到</span>
+					<div v-if="isMultiSelect && selectedCount > 0" class="cyber-btn px-3 md:px-4 py-2 cursor-pointer flex items-center" @click="showMoveDialog">
+						<font-awesome-icon :icon="faFolderOpen" class="mr-1 md:mr-2 text-cyber-accent" />
+						<span class="text-sm md:text-base">移动</span>
 					</div>
 					
 					<!-- 批量删除按钮（多选时显示） -->
-					<div v-if="isMultiSelect && selectedCount > 0" class="cyber-btn px-4 py-2 cursor-pointer flex items-center bg-cyber-secondary border-cyber-secondary" @click="batchDelete">
-						<font-awesome-icon :icon="faTrash" class="mr-2 text-cyber-secondary" />
-						<span class="hidden md:inline">批量删除</span>
+					<div v-if="isMultiSelect && selectedCount > 0" class="cyber-btn px-3 md:px-4 py-2 cursor-pointer flex items-center bg-cyber-secondary border-cyber-secondary" @click="batchDelete">
+						<font-awesome-icon :icon="faTrash" class="mr-1 md:mr-2 text-cyber-secondary" />
+						<span class="text-sm md:text-base">删除</span>
 					</div>
 					
-					<div class="cyber-btn px-4 py-2 cursor-pointer flex items-center" @click="showUploadDialog">
-						<font-awesome-icon :icon="faUpload" class="mr-2 text-cyber-primary" />
-						<span class="hidden md:inline">上传</span>
+					<!-- 移动端菜单按钮 -->
+					<div v-if="isMultiSelect && selectedCount > 0" class="cyber-btn px-3 py-2 cursor-pointer flex items-center md:hidden" @click="showMobileMenu">
+						<font-awesome-icon :icon="faEllipsisV" class="text-cyber-primary" />
 					</div>
-					<div class="cyber-btn px-4 py-2 cursor-pointer flex items-center" @click="addFolder">
-						<font-awesome-icon :icon="faFolderPlus" class="mr-2 text-cyber-accent" />
-						<span class="hidden md:inline">新建文件夹</span>
+					
+					<div class="cyber-btn px-3 md:px-4 py-2 cursor-pointer flex items-center" @click="showUploadDialog">
+						<font-awesome-icon :icon="faUpload" class="mr-1 md:mr-2 text-cyber-primary" />
+						<span class="text-sm md:text-base">上传</span>
 					</div>
-					<div class="cyber-btn px-4 py-2 cursor-pointer flex items-center" @click="listImages">
-						<font-awesome-icon :icon="faRedoAlt" class="mr-2 text-cyber-primary" />
-						<span class="hidden md:inline">刷新</span>
+					<div class="cyber-btn px-3 md:px-4 py-2 cursor-pointer flex items-center" @click="addFolder">
+						<font-awesome-icon :icon="faFolderPlus" class="mr-1 md:mr-2 text-cyber-accent" />
+						<span class="text-sm md:text-base hidden sm:inline">文件夹</span>
+						<span class="text-sm md:text-base sm:hidden">新建</span>
+					</div>
+					<div class="cyber-btn px-3 md:px-4 py-2 cursor-pointer flex items-center" @click="listImages">
+						<font-awesome-icon :icon="faRedoAlt" class="mr-1 md:mr-2 text-cyber-primary" />
+						<span class="text-sm md:text-base hidden sm:inline">刷新</span>
 					</div>
 				</div>
 			</div>
 
 			<!-- 当前路径显示 -->
 			<div class="mb-4 p-3 bg-cyber-bg-dark border border-cyber-border rounded">
-				<div class="flex items-center text-sm cyber-text-dim">
-					<font-awesome-icon :icon="faFolder" class="mr-2 text-cyber-accent" />
-					<span class="mr-2">当前位置:</span>
-					<div class="flex items-center text-cyber-primary font-mono">
+				<div class="flex items-center text-xs md:text-sm cyber-text-dim">
+					<font-awesome-icon :icon="faFolder" class="mr-2 text-cyber-accent flex-shrink-0" />
+					<span class="mr-2 hidden sm:inline">当前位置:</span>
+					<div class="flex items-center text-cyber-primary font-mono flex-wrap min-w-0">
 						<span 
 							class="cursor-pointer hover:text-cyber-accent transition-colors" 
 							@click="changeFolder('/')"
@@ -90,11 +96,12 @@
 							<span 
 								v-for="(segment, index) in getPathSegments()" 
 								:key="index"
-								class="flex items-center"
+								class="flex items-center min-w-0"
 							>
 								<span 
-									class="cursor-pointer hover:text-cyber-accent transition-colors mx-1"
+									class="cursor-pointer hover:text-cyber-accent transition-colors mx-1 truncate"
 									@click="navigateToSegment(index)"
+									:title="segment"
 								>{{ segment }}</span>
 								<span v-if="index < getPathSegments().length - 1">/</span>
 							</span>
@@ -291,7 +298,7 @@ import { computed, onMounted, ref } from 'vue'
 import type { ImgItem, ImgReq, Folder, ExportOptions, SelectedItem, MoveOptions } from '../utils/types'
 import ImageBox from '../components/ImageBox.vue'
 import { ElMessageBox, ElMessage, ElDialog, ElButton } from 'element-plus'
-import { faRedoAlt, faFolder, faFolderPlus, faCog, faCheckSquare, faSquare, faDownload, faTrash, faFolderOpen, faUpload, faCloudUploadAlt, faFile } from '@fortawesome/free-solid-svg-icons'
+import { faRedoAlt, faFolder, faFolderPlus, faCog, faCheckSquare, faSquare, faDownload, faTrash, faFolderOpen, faUpload, faCloudUploadAlt, faFile, faEllipsisV } from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import copy from 'copy-to-clipboard'
 
@@ -310,6 +317,9 @@ const selectedFiles = ref<File[]>([])
 const isDragOverModal = ref(false)
 const modalUploading = ref(false)
 const fileInputRef = ref<HTMLInputElement>()
+
+// 移动端菜单相关
+const showMobileMenuFlag = ref(false)
 
 const imagesTotalSize = computed(() =>
     uploadedImages.value.reduce((total, item) => total + item.size, 0)
@@ -546,13 +556,7 @@ const onDrop = async (e: DragEvent) => {
 		return
 	}
 	
-	// 检查文件大小限制
-	const maxSize = 20 * 1024 * 1024 // 20MB
-	const oversizedFiles = uploadFiles.filter(file => file.size > maxSize)
-	if (oversizedFiles.length > 0) {
-		ElMessage.error(`以下文件超过20MB限制: ${oversizedFiles.map(f => f.name).join(', ')}`)
-		return
-	}
+	// 移除文件大小限制，允许上传任意大小的文件
 	
 	uploadLoading.value = true
 	
@@ -1011,13 +1015,7 @@ const removeFile = (index: number) => {
 const uploadFiles = async () => {
   if (selectedFiles.value.length === 0) return
   
-  // 检查文件大小限制
-  const maxSize = 20 * 1024 * 1024 // 20MB
-  const oversizedFiles = selectedFiles.value.filter(file => file.size > maxSize)
-  if (oversizedFiles.length > 0) {
-    ElMessage.error(`以下文件超过20MB限制: ${oversizedFiles.map(f => f.name).join(', ')}`)
-    return
-  }
+  // 移除文件大小限制，允许上传任意大小的文件
   
   modalUploading.value = true
   
@@ -1042,5 +1040,10 @@ const uploadFiles = async () => {
   } finally {
     modalUploading.value = false
   }
+}
+
+// 移动端菜单相关方法
+const showMobileMenu = () => {
+  showMobileMenuFlag.value = true
 }
 </script>

@@ -1,5 +1,5 @@
 <template>
-	<div class="cyber-card w-full overflow-hidden relative group">
+	<div class="cyber-card w-full overflow-hidden relative group" @contextmenu.prevent="showContextMenu">
 		<loading-overlay :loading="loading" />
 
 		<!-- 文件容器 -->
@@ -43,8 +43,8 @@
 				<!-- 文件名 -->
 				<div class="w-full flex items-center cyber-text mb-2">
 					<div class="flex-1 w-full truncate">
-						<el-tooltip :content="name" placement="top-start">
-							<span class="text-sm font-medium">{{ name }}</span>
+						<el-tooltip :content="getDisplayName()" placement="top-start">
+							<span class="text-sm font-medium">{{ getDisplayName() }}</span>
 						</el-tooltip>
 					</div>
 					<div
@@ -66,58 +66,75 @@
 				</div>
 			</div>
 
-			<!-- 操作按钮 -->
+			<!-- 简化的操作按钮 -->
 			<div v-if="mode === 'uploaded'" class="border-t border-cyber-border">
 				<div class="w-full flex cyber-text h-10 text-center text-sm">
-					<el-tooltip :content="copyUrl" placement="top-start">
-						<div
-							class="flex-1 flex items-center justify-center cursor-pointer hover:bg-cyber-primary/20 transition-colors duration-200"
-							@click="copyLink(copyUrl)"
-						>
-							<font-awesome-icon :icon="faCopy" class="mr-2 text-cyber-accent" />
-							<span class="text-xs">链接</span>
-						</div>
-					</el-tooltip>
-					<el-divider direction="vertical" class="h-full" />
 					<el-tooltip :content="webpUrl" placement="top-start">
 						<div
 							class="flex-1 flex items-center justify-center cursor-pointer hover:bg-cyber-accent/20 transition-colors duration-200"
 							@click="copyLink(webpUrl)"
 						>
 							<font-awesome-icon :icon="faImage" class="mr-2 text-cyber-accent" />
-							<span class="text-xs">WebP</span>
+							<span class="text-xs">EO</span>
 						</div>
 					</el-tooltip>
 					<el-divider direction="vertical" class="h-full" />
-					<el-popconfirm
-						title="确认删除图片吗？"
-						confirm-button-type="danger"
-						@confirm="
-							() => {
-								loading = true
-								emit('delete')
-								return true
-							}
-						"
+					<div
+						class="flex-1 flex items-center justify-center cursor-pointer hover:bg-cyber-primary/20 transition-colors duration-200"
+						@click="downloadFile"
 					>
-						<template #reference>
-							<div class="flex-1 flex items-center justify-center cursor-pointer hover:bg-cyber-secondary/20 transition-colors duration-200">
-								<font-awesome-icon :icon="faTrash" class="mr-2 text-cyber-secondary" />
-								<span class="text-xs">删除</span>
-							</div>
-						</template>
-					</el-popconfirm>
+						<font-awesome-icon :icon="faDownload" class="mr-2 text-cyber-primary" />
+						<span class="text-xs">下载</span>
+					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- 赛博朋克边框效果 -->
 		<div class="absolute inset-0 border border-cyber-border opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+		
+		<!-- 右键菜单 -->
+		<div 
+			v-if="showContextMenuFlag"
+			class="fixed bg-cyber-bg-dark border border-cyber-border rounded-lg shadow-lg z-50 py-2 min-w-32"
+			:style="{ left: contextMenuX + 'px', top: contextMenuY + 'px' }"
+			@click.stop
+		>
+			<div 
+				class="px-4 py-2 hover:bg-cyber-primary/20 cursor-pointer cyber-text text-sm flex items-center"
+				@click="copyLink(copyUrl)"
+			>
+				<font-awesome-icon :icon="faCopy" class="mr-2 text-cyber-accent" />
+				复制直链
+			</div>
+			<div 
+				class="px-4 py-2 hover:bg-cyber-primary/20 cursor-pointer cyber-text text-sm flex items-center"
+				@click="copyLink(webpUrl)"
+			>
+				<font-awesome-icon :icon="faImage" class="mr-2 text-cyber-accent" />
+				复制EO链接
+			</div>
+			<div 
+				class="px-4 py-2 hover:bg-cyber-primary/20 cursor-pointer cyber-text text-sm flex items-center"
+				@click="downloadFile"
+			>
+				<font-awesome-icon :icon="faDownload" class="mr-2 text-cyber-primary" />
+				下载文件
+			</div>
+			<div class="border-t border-cyber-border my-1"></div>
+			<div 
+				class="px-4 py-2 hover:bg-cyber-secondary/20 cursor-pointer cyber-text text-sm flex items-center"
+				@click="confirmDelete"
+			>
+				<font-awesome-icon :icon="faTrash" class="mr-2 text-cyber-secondary" />
+				删除文件
+			</div>
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { faXmark, faTrash, faCopy, faEye, faDownload, faFile, faFileText, faFilePdf, faFileArchive, faFileVideo, faFileAudio, faFileCode } from '@fortawesome/free-solid-svg-icons'
+import { faXmark, faTrash, faCopy, faEye, faDownload, faFile, faFileText, faFilePdf, faFileArchive, faFileVideo, faFileAudio, faFileCode, faImage } from '@fortawesome/free-solid-svg-icons'
 import copy from 'copy-to-clipboard'
 import formatBytes from '../utils/format-bytes'
 import {ElTooltip, ElDivider, ElPopconfirm, ElImage, ElMessage, ElMessageBox} from 'element-plus'
@@ -138,6 +155,11 @@ const emit = defineEmits(['delete'])
 
 const imageError = ref(false)
 const loading = ref(true)
+
+// 右键菜单相关
+const showContextMenuFlag = ref(false)
+const contextMenuX = ref(0)
+const contextMenuY = ref(0)
 
 // 判断是否为图片文件
 const isImageFile = computed(() => {
@@ -170,6 +192,13 @@ const getFileType = () => {
   return ext.toUpperCase()
 }
 
+// 获取不包含路径的文件显示名称
+const getDisplayName = () => {
+  // 从完整路径中提取文件名
+  const parts = props.name.split('/')
+  return parts[parts.length - 1] || props.name
+}
+
 // 对于非图片文件，立即设置loading为false
 onMounted(() => {
   if (!isImageFile.value) {
@@ -181,8 +210,9 @@ const copyLink = (link : string) => {
   if (res) {
     ElMessage.success('链接复制成功')
   } else {
-    ElMessage.success('链接复制失败')
+    ElMessage.error('链接复制失败')
   }
+  hideContextMenu()
 }
 
 const showPreview = () => {
@@ -242,9 +272,32 @@ const downloadImage = () => {
   ElMessage.success('🎉 下载已开始')
 }
 
+// 下载文件（直接跳转到EO链接）
+const downloadFile = () => {
+  window.open(props.webpUrl, '_blank')
+  hideContextMenu()
+}
+
+// 显示右键菜单
+const showContextMenu = (event: MouseEvent) => {
+  contextMenuX.value = event.clientX
+  contextMenuY.value = event.clientY
+  showContextMenuFlag.value = true
+  
+  // 点击其他地方隐藏菜单
+  document.addEventListener('click', hideContextMenu)
+}
+
+// 隐藏右键菜单
+const hideContextMenu = () => {
+  showContextMenuFlag.value = false
+  document.removeEventListener('click', hideContextMenu)
+}
+
 const confirmDelete = () => {
+  hideContextMenu()
   ElMessageBox.confirm(
-    `确定要删除图片 "${props.name}" 吗？此操作不可撤销。`,
+    `确定要删除文件 "${getDisplayName()}" 吗？此操作不可撤销。`,
     '删除确认',
     {
       confirmButtonText: '删除',
@@ -254,7 +307,7 @@ const confirmDelete = () => {
     }
   ).then(() => {
     emit('delete')
-    ElMessage.success('🎉 图片删除成功')
+    ElMessage.success('🎉 文件删除成功')
   }).catch(() => {})
 }
 </script>
