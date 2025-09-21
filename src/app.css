@@ -981,7 +981,7 @@ body::after {
 
 /* 强制覆盖Element Plus Dialog样式 */
 .el-dialog,
-:deep(.el-dialog),
+::deep(.el-dialog),
 .cyber-dialog {
 	background: var(--cyber-bg-card) !important;
 	border: 1px solid var(--cyber-border) !important;
@@ -992,65 +992,31 @@ body::after {
 		0 0 60px rgba(0, 255, 136, 0.1) !important;
 }
 
-.el-dialog__header,
-:deep(.el-dialog__header),
-.cyber-dialog .el-dialog__header {
-	background: var(--cyber-bg-dark) !important;
-	border-bottom: 1px solid var(--cyber-border) !important;
-	color: var(--cyber-text) !important;
-	border-radius: 12px 12px 0 0 !important;
-	padding: 20px 24px !important;
-}
-
-.el-dialog__title,
-:deep(.el-dialog__title),
-.cyber-dialog .el-dialog__title {
-	color: var(--cyber-text) !important;
-	font-weight: bold !important;
-	text-shadow: 0 0 10px rgba(0, 255, 136, 0.3) !important;
-}
-
-.el-dialog__body,
-:deep(.el-dialog__body),
-.cyber-dialog .el-dialog__body {
+/* 强化覆盖 Element Plus Dialog（防止白底） */
+.el-overlay .el-dialog,
+.el-overlay-dialog .el-dialog {
 	background: var(--cyber-bg-card) !important;
 	color: var(--cyber-text) !important;
-	padding: 24px !important;
 }
 
-.el-dialog__footer,
-:deep(.el-dialog__footer),
-.cyber-dialog .el-dialog__footer {
+.el-overlay .el-dialog__header,
+.el-overlay .el-dialog__footer {
 	background: var(--cyber-bg-dark) !important;
-	border-top: 1px solid var(--cyber-border) !important;
-	border-radius: 0 0 12px 12px !important;
-	padding: 16px 24px !important;
+	color: var(--cyber-text) !important;
 }
 
-.el-dialog__headerbtn,
-:deep(.el-dialog__headerbtn),
-.cyber-dialog .el-dialog__headerbtn {
-	top: 20px !important;
-	right: 24px !important;
+.el-overlay .el-dialog__body {
+	background: var(--cyber-bg-card) !important;
+	color: var(--cyber-text) !important;
 }
 
-.el-dialog__close,
-:deep(.el-dialog__close),
-.cyber-dialog .el-dialog__close {
-	color: var(--cyber-text-dim) !important;
-}
-
-.el-dialog__close:hover,
-:deep(.el-dialog__close:hover),
-.cyber-dialog .el-dialog__close:hover {
-	color: var(--cyber-primary) !important;
-}
-
-/* 覆盖Dialog遮罩 */
-.el-overlay,
-:deep(.el-overlay) {
-	background-color: rgba(0, 0, 0, 0.85) !important;
-	backdrop-filter: blur(8px) !important;
+/* Element Plus 变量暗色化，防止默认白色渗透 */
+:root {
+	--el-bg-color: var(--cyber-bg-card);
+	--el-text-color-primary: var(--cyber-text);
+	--el-border-color: var(--cyber-border);
+	--el-color-primary: var(--cyber-primary);
+	--el-overlay-color-lighter: rgba(0, 0, 0, 0.85);
 }
 
 /* 强制覆盖上传弹窗内的按钮样式 */
