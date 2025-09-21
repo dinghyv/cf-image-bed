@@ -143,24 +143,27 @@ router.post('/list', auth, async (req: Request, env: Env) => {
         console.log('Filtering prefixes for include:', include)
         console.log('All prefixes before filtering:', filteredPrefixes)
         
+        // 确保include路径以/结尾，便于比较
+        const normalizedInclude = include.endsWith('/') ? include : include + '/'
+        
         filteredPrefixes = filteredPrefixes.filter(prefix => {
-            console.log('Checking prefix:', prefix, 'against include:', include)
+            console.log('Checking prefix:', prefix, 'against normalizedInclude:', normalizedInclude)
             
             // 确保prefix以当前路径开头
-            if (!prefix.startsWith(include)) {
+            if (!prefix.startsWith(normalizedInclude)) {
                 console.log('Prefix does not start with include, skipping')
                 return false
             }
             
             // 获取相对于当前文件夹的路径
-            const relativePath = prefix.substring(include.length)
+            const relativePath = prefix.substring(normalizedInclude.length)
             console.log('Relative path:', relativePath)
             
-            // 移除开头的斜杠
-            const cleanRelativePath = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
+            // 移除结尾的斜杠来判断层级
+            const cleanRelativePath = relativePath.endsWith('/') ? relativePath.slice(0, -1) : relativePath
             console.log('Clean relative path:', cleanRelativePath)
             
-            // 直接子文件夹应该只有一层，即cleanRelativePath不包含斜杠
+            // 直接子文件夹应该只有一层，即cleanRelativePath不包含斜杠且不为空
             const isDirectSubfolder = cleanRelativePath && !cleanRelativePath.includes('/')
             console.log('Is direct subfolder:', isDirectSubfolder)
             
@@ -182,9 +185,10 @@ router.post('/list', auth, async (req: Request, env: Env) => {
                 
                 if (include) {
                     // 如果在子文件夹中，只处理当前文件夹的子文件夹
-                    if (folderPath.startsWith(include)) {
-                        const relativePath = folderPath.substring(include.length)
-                        const cleanRelativePath = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
+                    const normalizedInclude = include.endsWith('/') ? include : include + '/'
+                    if (folderPath.startsWith(normalizedInclude)) {
+                        const relativePath = folderPath.substring(normalizedInclude.length)
+                        const cleanRelativePath = relativePath.endsWith('/') ? relativePath.slice(0, -1) : relativePath
                         const isDirectSubfolder = cleanRelativePath && !cleanRelativePath.includes('/')
                         
                         if (isDirectSubfolder) {
@@ -194,7 +198,7 @@ router.post('/list', auth, async (req: Request, env: Env) => {
                 } else {
                     // 在根目录中，提取所有直接子文件夹
                     const pathParts = folderPath.split('/')
-                    if (pathParts.length === 2 && pathParts[0] === '') { // 直接子文件夹
+                    if (pathParts.length === 2 && pathParts[0] === '' && pathParts[1] !== '') { // 直接子文件夹
                         folderSet.add(folderPath)
                     }
                 }

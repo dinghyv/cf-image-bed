@@ -178,15 +178,20 @@ const selectedCount = computed(() => {
 const getFolderDisplayName = (folderPath: string) => {
     if (folderPath === '/') return '根目录'
     
-    // 移除开头的斜杠
-    let path = folderPath.startsWith('/') ? folderPath.substring(1) : folderPath
-    // 移除结尾的斜杠
-    path = path.endsWith('/') ? path.slice(0, -1) : path
+    // 标准化路径格式
+    let path = folderPath.endsWith('/') ? folderPath.slice(0, -1) : folderPath
+    path = path.startsWith('/') ? path.substring(1) : path
     
     // 如果当前在子文件夹中，只显示相对于当前文件夹的名称
-    if (delimiter.value !== '/' && path.startsWith(delimiter.value.replace('/', ''))) {
-        const relativePath = path.substring(delimiter.value.replace('/', '').length)
-        return relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
+    if (delimiter.value !== '/') {
+        const currentPath = delimiter.value.endsWith('/') ? delimiter.value.slice(0, -1) : delimiter.value
+        const normalizedCurrentPath = currentPath.startsWith('/') ? currentPath.substring(1) : currentPath
+        
+        if (path.startsWith(normalizedCurrentPath + '/')) {
+            const relativePath = path.substring(normalizedCurrentPath.length + 1)
+            const parts = relativePath.split('/')
+            return parts[0] || relativePath
+        }
     }
     
     // 否则显示完整路径的最后一部分
@@ -257,25 +262,26 @@ const listImages = () => {
         prefixes.value = data.prefixes
       } else {
         // 子文件夹：过滤出当前文件夹的直接子文件夹
-        const currentPrefix = delimiter.value.replace('/', '')
+        const currentPrefix = delimiter.value.endsWith('/') ? delimiter.value : delimiter.value + '/'
         const subFolders = data.prefixes.filter(prefix => {
-          const prefixPath = prefix.replace('/', '')
-          console.log('Checking prefix:', prefix, 'prefixPath:', prefixPath, 'currentPrefix:', currentPrefix)
+          console.log('Checking prefix:', prefix, 'against currentPrefix:', currentPrefix)
           
           // 只显示直接子文件夹
-          if (!prefixPath.startsWith(currentPrefix)) {
+          if (!prefix.startsWith(currentPrefix)) {
             console.log('Prefix does not start with current prefix, skipping')
             return false
           }
           
           // 获取相对于当前文件夹的路径
-          const relativePath = prefixPath.substring(currentPrefix.length)
-          // 移除开头的斜杠
-          const cleanRelativePath = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath
+          const relativePath = prefix.substring(currentPrefix.length)
+          console.log('relativePath:', relativePath)
           
-          console.log('relativePath:', relativePath, 'cleanRelativePath:', cleanRelativePath)
+          // 移除结尾的斜杠来判断层级
+          const cleanRelativePath = relativePath.endsWith('/') ? relativePath.slice(0, -1) : relativePath
           
-          // 直接子文件夹应该只有一层，即 cleanRelativePath 不包含斜杠
+          console.log('cleanRelativePath:', cleanRelativePath)
+          
+          // 直接子文件夹应该只有一层，即 cleanRelativePath 不包含斜杠且不为空
           const isDirectSubfolder = cleanRelativePath && !cleanRelativePath.includes('/')
           console.log('Is direct subfolder:', isDirectSubfolder)
           
