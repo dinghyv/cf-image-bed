@@ -206,7 +206,7 @@
 			width="600px"
 			:show-close="true"
 			:close-on-click-modal="false"
-			custom-class="cyber-dialog"
+			class="cyber-dialog"
 		>
 			<div class="upload-dialog-content">
 				<div class="mb-4">
