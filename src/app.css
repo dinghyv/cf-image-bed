@@ -979,6 +979,63 @@ body::after {
 	color: var(--cyber-primary) !important;
 }
 
+/* 强制覆盖Element Plus Dialog样式 */
+:deep(.el-dialog) {
+	background: var(--cyber-bg-card) !important;
+	border: 1px solid var(--cyber-border) !important;
+	border-radius: 12px !important;
+	box-shadow: 
+		0 0 0 1px rgba(0, 255, 136, 0.3),
+		0 8px 40px rgba(0, 0, 0, 0.9),
+		0 0 60px rgba(0, 255, 136, 0.1) !important;
+}
+
+:deep(.el-dialog__header) {
+	background: var(--cyber-bg-dark) !important;
+	border-bottom: 1px solid var(--cyber-border) !important;
+	color: var(--cyber-text) !important;
+	border-radius: 12px 12px 0 0 !important;
+	padding: 20px 24px !important;
+}
+
+:deep(.el-dialog__title) {
+	color: var(--cyber-text) !important;
+	font-weight: bold !important;
+	text-shadow: 0 0 10px rgba(0, 255, 136, 0.3) !important;
+}
+
+:deep(.el-dialog__body) {
+	background: var(--cyber-bg-card) !important;
+	color: var(--cyber-text) !important;
+	padding: 24px !important;
+}
+
+:deep(.el-dialog__footer) {
+	background: var(--cyber-bg-dark) !important;
+	border-top: 1px solid var(--cyber-border) !important;
+	border-radius: 0 0 12px 12px !important;
+	padding: 16px 24px !important;
+}
+
+:deep(.el-dialog__headerbtn) {
+	top: 20px !important;
+	right: 24px !important;
+}
+
+:deep(.el-dialog__close) {
+	color: var(--cyber-text-dim) !important;
+}
+
+:deep(.el-dialog__close:hover) {
+	color: var(--cyber-primary) !important;
+}
+
+/* 覆盖Dialog遮罩 */
+:deep(.el-overlay) {
+	background-color: rgba(0, 0, 0, 0.85) !important;
+	backdrop-filter: blur(8px) !important;
+}
+
 /* 赛博朋克消息提示样式 */
 :deep(.el-message) {
 	background: var(--cyber-bg-card) !important;

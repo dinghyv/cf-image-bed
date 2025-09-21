@@ -280,12 +280,17 @@ const downloadFile = () => {
 
 // 显示右键菜单
 const showContextMenu = (event: MouseEvent) => {
+  event.preventDefault()
+  event.stopPropagation()
+  
   contextMenuX.value = event.clientX
   contextMenuY.value = event.clientY
   showContextMenuFlag.value = true
   
-  // 点击其他地方隐藏菜单
-  document.addEventListener('click', hideContextMenu)
+  // 立即添加全局点击监听器来隐藏菜单
+  setTimeout(() => {
+    document.addEventListener('click', hideContextMenu)
+  }, 0)
 }
 
 // 隐藏右键菜单

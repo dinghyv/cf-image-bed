@@ -294,7 +294,7 @@
 import { requestListImages, requestDeleteImage, createFolder, requestAllFolders, requestMoveImages, requestUploadImages, requestDeleteFolder } from '../utils/request'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import formatBytes from '../utils/format-bytes'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { ImgItem, ImgReq, Folder, ExportOptions, SelectedItem, MoveOptions } from '../utils/types'
 import ImageBox from '../components/ImageBox.vue'
 import { ElMessageBox, ElMessage, ElDialog, ElButton } from 'element-plus'
@@ -582,8 +582,45 @@ const onDrop = async (e: DragEvent) => {
 	}
 }
 
+// 键盘事件处理
+const handleKeydown = (event: KeyboardEvent) => {
+  // 如果用户正在输入（焦点在输入框中），则不处理快捷键
+  const activeElement = document.activeElement
+  if (activeElement && (
+    activeElement.tagName === 'INPUT' || 
+    activeElement.tagName === 'TEXTAREA' || 
+    activeElement.contentEditable === 'true'
+  )) {
+    return
+  }
+
+  switch (event.key.toLowerCase()) {
+    case 'v':
+      event.preventDefault()
+      if (!isMultiSelect.value) {
+        toggleMultiSelect()
+        ElMessage.success('🎯 已进入多选模式 (按ESC退出)')
+      }
+      break
+    case 'escape':
+      event.preventDefault()
+      if (isMultiSelect.value) {
+        toggleMultiSelect()
+        ElMessage.success('✅ 已退出多选模式')
+      }
+      break
+  }
+}
+
 onMounted(() => {
 	listImages()
+	// 添加键盘事件监听
+	document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+	// 移除键盘事件监听
+	document.removeEventListener('keydown', handleKeydown)
 })
 
 const deleteImage = (src: string) => {
