@@ -294,13 +294,17 @@
 import { requestListImages, requestDeleteImage, createFolder, requestAllFolders, requestMoveImages, requestUploadImages, requestDeleteFolder } from '../utils/request'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 import formatBytes from '../utils/format-bytes'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import type { ImgItem, ImgReq, Folder, ExportOptions, SelectedItem, MoveOptions } from '../utils/types'
 import ImageBox from '../components/ImageBox.vue'
 import { ElMessageBox, ElMessage, ElDialog, ElButton } from 'element-plus'
 import { faRedoAlt, faFolder, faFolderPlus, faCog, faCheckSquare, faSquare, faDownload, faTrash, faFolderOpen, faUpload, faCloudUploadAlt, faFile, faEllipsisV } from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import copy from 'copy-to-clipboard'
+
+const route = useRoute()
+const router = useRouter()
 
 const loading = ref(false)
 const delimiter = ref('/')
@@ -355,8 +359,24 @@ const getFolderDisplayName = (folderPath: string) => {
     return parts[parts.length - 1] || path
 }
 const changeFolder = (path : string) => {
-  console.log(path)
+  console.log('=== changeFolder ===')
+  console.log('Input path:', path)
+  console.log('Current delimiter before change:', delimiter.value)
+  
   delimiter.value = path
+  console.log('New delimiter after change:', delimiter.value)
+  
+  // 更新URL以反映当前路径
+  const encodedPath = path === '/' ? '' : encodeURIComponent(path.replace(/^\/|\/$/g, ''))
+  const newQuery = encodedPath ? { folder: encodedPath } : {}
+  console.log('URL query will be:', newQuery)
+  
+  router.replace({ 
+    path: '/', 
+    query: newQuery 
+  }).catch(() => {}) // 忽略导航错误
+  
+  console.log('==================')
   listImages()
 }
 const addFolder = () => {
@@ -478,38 +498,62 @@ const listImages = () => {
 
 // 获取父文件夹路径
 const getParentPath = (currentPath: string) => {
-  if (currentPath === '/') return '/'
+  console.log('getParentPath called with:', currentPath)
   
-  // 标准化路径：移除结尾的斜杠
-  const normalizedPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath
-  
-  // 如果是根目录下的直接子文件夹，返回根目录
-  if (!normalizedPath.includes('/') || normalizedPath.split('/').length === 2) {
+  if (currentPath === '/') {
+    console.log('Already at root, returning /')
     return '/'
   }
   
+  // 标准化路径：移除结尾的斜杠
+  let normalizedPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath
+  
+  // 如果路径不以/开头，添加/
+  if (!normalizedPath.startsWith('/')) {
+    normalizedPath = '/' + normalizedPath
+  }
+  
+  console.log('Normalized path:', normalizedPath)
+  
   // 获取父路径
   const lastSlashIndex = normalizedPath.lastIndexOf('/')
-  const parentPath = normalizedPath.substring(0, lastSlashIndex)
+  if (lastSlashIndex <= 0) {
+    console.log('Parent is root directory')
+    return '/'
+  }
   
-  // 确保返回的路径以/结尾
-  return parentPath === '' ? '/' : parentPath + '/'
+  const parentPath = normalizedPath.substring(0, lastSlashIndex)
+  const result = parentPath === '' || parentPath === '/' ? '/' : parentPath + '/'
+  
+  console.log('Parent path result:', result)
+  return result
 }
 
 // 获取路径分段
 const getPathSegments = () => {
+  console.log('getPathSegments - delimiter.value:', delimiter.value)
+  
   if (delimiter.value === '/') return []
   
-  const path = delimiter.value.endsWith('/') ? delimiter.value.slice(0, -1) : delimiter.value
-  const cleanPath = path.startsWith('/') ? path.substring(1) : path
+  let path = delimiter.value
+  // 移除开头和结尾的斜杠
+  if (path.startsWith('/')) path = path.substring(1)
+  if (path.endsWith('/')) path = path.slice(0, -1)
   
-  return cleanPath.split('/').filter(segment => segment.length > 0)
+  const segments = path ? path.split('/').filter(segment => segment.length > 0) : []
+  console.log('getPathSegments - result:', segments)
+  
+  return segments
 }
 
 // 导航到指定分段
 const navigateToSegment = (index: number) => {
   const segments = getPathSegments()
+  console.log('navigateToSegment - segments:', segments, 'index:', index)
+  
   const targetPath = '/' + segments.slice(0, index + 1).join('/') + '/'
+  console.log('navigateToSegment - targetPath:', targetPath)
+  
   changeFolder(targetPath)
 }
 
@@ -582,8 +626,47 @@ const onDrop = async (e: DragEvent) => {
 	}
 }
 
+// 初始化路径
+const initializePath = () => {
+  const folderParam = route.query.folder as string
+  if (folderParam) {
+    delimiter.value = '/' + decodeURIComponent(folderParam) + '/'
+    console.log('Initialized from URL with path:', delimiter.value)
+  } else {
+    delimiter.value = '/'
+    console.log('Initialized with root path')
+  }
+}
+
+// 监听路由变化
+watch(() => route.query.folder, (newFolder) => {
+  const newPath = newFolder ? '/' + decodeURIComponent(newFolder as string) + '/' : '/'
+  if (newPath !== delimiter.value) {
+    console.log('Route changed, updating path to:', newPath)
+    delimiter.value = newPath
+    listImages()
+  }
+})
+
 onMounted(() => {
-	listImages()
+  initializePath()
+  
+  // 调试：测试路径函数
+  console.log('=== 路径函数测试 ===')
+  console.log('当前路径:', delimiter.value)
+  console.log('父路径:', getParentPath(delimiter.value))
+  console.log('路径分段:', getPathSegments())
+  console.log('=================')
+  
+  listImages()
+  
+  // 添加键盘事件监听
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  // 移除键盘事件监听
+  document.removeEventListener('keydown', handleKeydown)
 })
 
 const deleteImage = (src: string) => {
@@ -592,6 +675,36 @@ const deleteImage = (src: string) => {
   }).then((res) => {
 		uploadedImages.value = uploadedImages.value.filter((item) => item.key !== res)
 	})
+}
+
+// 键盘事件处理
+const handleKeydown = (event: KeyboardEvent) => {
+  // 如果用户正在输入框中输入，不处理快捷键
+  if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+    return
+  }
+  
+  // 如果有弹窗打开，不处理快捷键
+  if (showUploadModal.value) {
+    return
+  }
+  
+  switch (event.key.toLowerCase()) {
+    case 'v':
+      event.preventDefault()
+      if (!isMultiSelect.value) {
+        toggleMultiSelect()
+        ElMessage.success('🎯 已进入多选模式，按ESC键退出')
+      }
+      break
+    case 'escape':
+      event.preventDefault()
+      if (isMultiSelect.value) {
+        toggleMultiSelect()
+        ElMessage.success('✅ 已退出多选模式')
+      }
+      break
+  }
 }
 
 // 多选相关方法
