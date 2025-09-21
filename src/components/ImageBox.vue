@@ -98,42 +98,45 @@
 		<div class="absolute inset-0 border border-cyber-border opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
 		
 		<!-- 右键菜单 -->
-		<div 
-			v-if="showContextMenuFlag"
-			class="fixed bg-cyber-bg-dark/90 backdrop-blur-md border border-cyber-border rounded-lg shadow-lg z-50 py-2 min-w-32"
-			:style="{ left: contextMenuX + 'px', top: contextMenuY + 'px' }"
-			@click.stop
-		>
+		<teleport to="body">
 			<div 
-				class="px-4 py-2 hover:bg-cyber-primary/20 cursor-pointer cyber-text text-sm flex items-center"
-				@click="copyLink(copyUrl)"
+				v-if="showContextMenuFlag"
+				class="fixed bg-cyber-bg-dark/90 backdrop-blur-md border border-cyber-border rounded-lg shadow-lg z-50 py-2 min-w-32"
+				:style="{ left: contextMenuX + 'px', top: contextMenuY + 'px' }"
+				@click.stop
+				@contextmenu.prevent
 			>
-				<font-awesome-icon :icon="faCopy" class="mr-2 text-cyber-accent" />
-				复制直链
+				<div 
+					class="px-4 py-2 hover:bg-cyber-primary/20 cursor-pointer cyber-text text-sm flex items-center"
+					@click="copyLink(copyUrl)"
+				>
+					<font-awesome-icon :icon="faCopy" class="mr-2 text-cyber-accent" />
+					复制直链
+				</div>
+				<div 
+					class="px-4 py-2 hover:bg-cyber-primary/20 cursor-pointer cyber-text text-sm flex items-center"
+					@click="copyLink(webpUrl)"
+				>
+					<font-awesome-icon :icon="faImage" class="mr-2 text-cyber-accent" />
+					复制EO链接
+				</div>
+				<div 
+					class="px-4 py-2 hover:bg-cyber-primary/20 cursor-pointer cyber-text text-sm flex items-center"
+					@click="downloadFile"
+				>
+					<font-awesome-icon :icon="faDownload" class="mr-2 text-cyber-primary" />
+					下载文件
+				</div>
+				<div class="border-t border-cyber-border my-1"></div>
+				<div 
+					class="px-4 py-2 hover:bg-cyber-secondary/20 cursor-pointer cyber-text text-sm flex items-center"
+					@click="confirmDelete"
+				>
+					<font-awesome-icon :icon="faTrash" class="mr-2 text-cyber-secondary" />
+					删除文件
+				</div>
 			</div>
-			<div 
-				class="px-4 py-2 hover:bg-cyber-primary/20 cursor-pointer cyber-text text-sm flex items-center"
-				@click="copyLink(webpUrl)"
-			>
-				<font-awesome-icon :icon="faImage" class="mr-2 text-cyber-accent" />
-				复制EO链接
-			</div>
-			<div 
-				class="px-4 py-2 hover:bg-cyber-primary/20 cursor-pointer cyber-text text-sm flex items-center"
-				@click="downloadFile"
-			>
-				<font-awesome-icon :icon="faDownload" class="mr-2 text-cyber-primary" />
-				下载文件
-			</div>
-			<div class="border-t border-cyber-border my-1"></div>
-			<div 
-				class="px-4 py-2 hover:bg-cyber-secondary/20 cursor-pointer cyber-text text-sm flex items-center"
-				@click="confirmDelete"
-			>
-				<font-awesome-icon :icon="faTrash" class="mr-2 text-cyber-secondary" />
-				删除文件
-			</div>
-		</div>
+		</teleport>
 	</div>
 </template>
 
@@ -313,13 +316,23 @@ const showContextMenu = (event: MouseEvent | TouchEvent) => {
     clientY = touch.clientY
   }
   
-  contextMenuX.value = clientX
-  contextMenuY.value = clientY
+  // 边界定位，避免超出视窗
+  const menuWidth = 200
+  const menuHeight = 160
+  const viewportWidth = window.innerWidth
+  const viewportHeight = window.innerHeight
+  const safeX = Math.min(clientX, viewportWidth - menuWidth - 8)
+  const safeY = Math.min(clientY, viewportHeight - menuHeight - 8)
+  contextMenuX.value = Math.max(8, safeX)
+  contextMenuY.value = Math.max(8, safeY)
   showContextMenuFlag.value = true
   
   // 立即添加全局点击监听器来隐藏菜单
-  document.addEventListener('click', hideContextMenu, { once: true })
-  document.addEventListener('touchstart', hideContextMenu, { once: true })
+  setTimeout(() => {
+    document.addEventListener('click', hideContextMenu, { once: true })
+    document.addEventListener('contextmenu', hideContextMenu, { once: true })
+    document.addEventListener('touchstart', hideContextMenu, { once: true })
+  }, 0)
 }
 
 // 隐藏右键菜单
