@@ -11,9 +11,9 @@
 				<div class="text-6xl mb-4 text-cyber-primary">
 					<font-awesome-icon :icon="faUpload" />
 				</div>
-				<div class="cyber-text text-xl font-bold mb-2">拖拽文件到此处上传</div>
+				<div class="cyber-text text-xl font-bold mb-2">拖拽文件添加到队列</div>
 				<div class="cyber-text-dim text-sm">
-					将文件拖拽到此区域，即可上传到 <span class="text-cyber-accent font-bold">{{ delimiter === '/' ? '根目录' : delimiter.replace('/', '') }}</span>
+					将文件拖拽到此区域，添加到上传队列中，目标文件夹：<span class="text-cyber-accent font-bold">{{ delimiter === '/' ? '根目录' : delimiter.replace('/', '') }}</span>
 				</div>
 			</div>
 		</div>
@@ -264,35 +264,90 @@
 								type="danger" 
 								@click="removeFile(index)"
 								class="ml-2"
+								:disabled="modalUploading"
 							>
 								<font-awesome-icon :icon="faTrash" />
 							</el-button>
 						</div>
 					</div>
 				</div>
+
+				<!-- 上传进度显示 -->
+				<div v-if="modalUploading" class="mt-4">
+					<div class="text-sm cyber-text mb-2">上传进度</div>
+					<div class="mb-2">
+						<div class="flex justify-between text-xs cyber-text-dim mb-1">
+							<span>总体进度</span>
+							<span>{{ Math.round(modalUploadProgress) }}%</span>
+						</div>
+						<div class="cyber-progress-bar">
+							<div 
+								class="cyber-progress-fill" 
+								:style="{ width: modalUploadProgress + '%' }"
+							></div>
+						</div>
+					</div>
+					<div v-if="modalCurrentFile" class="text-xs cyber-text-dim">
+						正在上传: {{ modalCurrentFile }}
+					</div>
+				</div>
 			</div>
 
 			<template #footer>
-				<div class="flex justify-end space-x-3">
-					<el-button @click="closeUploadDialog">取消</el-button>
-					<el-button 
-						type="primary" 
-						@click="uploadFiles"
-						:disabled="selectedFiles.length === 0 || modalUploading"
-						:loading="modalUploading"
-					>
-						<font-awesome-icon :icon="faUpload" class="mr-2" />
-						上传 {{ selectedFiles.length > 0 ? `(${selectedFiles.length})` : '' }}
-					</el-button>
+				<div class="flex justify-between items-center">
+					<!-- 上传模式选择 -->
+					<div class="flex items-center space-x-4">
+						<label class="flex items-center cursor-pointer">
+							<input 
+								v-model="uploadMode" 
+								type="radio" 
+								value="direct" 
+								class="mr-2"
+							>
+							<span class="cyber-text text-sm">直接上传</span>
+						</label>
+						<label class="flex items-center cursor-pointer">
+							<input 
+								v-model="uploadMode" 
+								type="radio" 
+								value="queue" 
+								class="mr-2"
+							>
+							<span class="cyber-text text-sm">添加到队列</span>
+						</label>
+					</div>
+
+					<div class="flex space-x-3">
+						<el-button @click="closeUploadDialog">取消</el-button>
+						<el-button 
+							type="primary" 
+							@click="handleUploadAction"
+							:disabled="selectedFiles.length === 0 || modalUploading"
+							:loading="modalUploading"
+						>
+							<font-awesome-icon :icon="uploadMode === 'direct' ? faUpload : faCloudUploadAlt" class="mr-2" />
+							{{ uploadMode === 'direct' ? '立即上传' : '添加到队列' }} {{ selectedFiles.length > 0 ? `(${selectedFiles.length})` : '' }}
+						</el-button>
+					</div>
 				</div>
 			</template>
 		</el-dialog>
+
+		<!-- 任务队列组件 -->
+		<task-queue
+			:tasks="uploadTasks"
+			:current-folder="delimiter"
+			@update-tasks="updateUploadTasks"
+			@upload-complete="onUploadComplete"
+		/>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { requestListImages, requestDeleteImage, createFolder, requestAllFolders, requestMoveImages, requestUploadImages, requestDeleteFolder } from '../utils/request'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
+import TaskQueue from '../components/TaskQueue.vue'
+import type { UploadTask } from '../components/TaskQueue.vue'
 import formatBytes from '../utils/format-bytes'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { ImgItem, ImgReq, Folder, ExportOptions, SelectedItem, MoveOptions } from '../utils/types'
@@ -317,9 +372,16 @@ const selectedFiles = ref<File[]>([])
 const isDragOverModal = ref(false)
 const modalUploading = ref(false)
 const fileInputRef = ref<HTMLInputElement>()
+const uploadMode = ref<'direct' | 'queue'>('queue')
+const modalUploadProgress = ref(0)
+const modalCurrentFile = ref('')
 
 // 移动端菜单相关
 const showMobileMenuFlag = ref(false)
+
+// 任务队列相关
+const uploadTasks = ref<UploadTask[]>([])
+const taskIdCounter = ref(0)
 
 const imagesTotalSize = computed(() =>
     uploadedImages.value.reduce((total, item) => total + item.size, 0)
@@ -550,36 +612,16 @@ const onDrop = async (e: DragEvent) => {
 	}
 	
 	// 接受所有文件类型，不再限制为图片
-	const uploadFiles = Array.from(files)
-	if (uploadFiles.length === 0) {
+	const droppedFiles = Array.from(files)
+	if (droppedFiles.length === 0) {
 		ElMessage.warning('请拖拽文件')
 		return
 	}
 	
-	// 移除文件大小限制，允许上传任意大小的文件
+	// 将文件添加到任务队列而不是直接上传
+	addFilesToTaskQueue(droppedFiles, delimiter.value)
 	
-	uploadLoading.value = true
-	
-	try {
-		const formData = new FormData()
-		uploadFiles.forEach(file => {
-			formData.append('files', file)
-		})
-		// 上传到当前文件夹
-		formData.append('folder', delimiter.value)
-		
-		const uploadedItems = await requestUploadImages(formData)
-		
-		ElMessage.success(`🎉 成功上传 ${uploadedItems.length} 个文件到 ${delimiter.value === '/' ? '根目录' : delimiter.value.replace('/', '')}`)
-		
-		// 刷新文件列表
-		listImages()
-	} catch (error) {
-		console.error('Upload failed:', error)
-		ElMessage.error(`上传失败: ${error}`)
-	} finally {
-		uploadLoading.value = false
-	}
+	ElMessage.success(`📝 已添加 ${droppedFiles.length} 个文件到上传队列`)
 }
 
 // 键盘事件处理
@@ -1052,30 +1094,76 @@ const removeFile = (index: number) => {
 const uploadFiles = async () => {
   if (selectedFiles.value.length === 0) return
   
-  // 移除文件大小限制，允许上传任意大小的文件
-  
   modalUploading.value = true
+  modalUploadProgress.value = 0
+  modalCurrentFile.value = ''
   
   try {
-    const formData = new FormData()
-    selectedFiles.value.forEach(file => {
-      formData.append('files', file)
-    })
-    // 上传到当前文件夹
-    formData.append('folder', delimiter.value)
+    const totalFiles = selectedFiles.value.length
+    let completedFiles = 0
     
-    const uploadedItems = await requestUploadImages(formData)
+    // 逐个上传文件以显示进度
+    for (const file of selectedFiles.value) {
+      modalCurrentFile.value = file.name
+      
+      // 模拟进度更新
+      const progressInterval = setInterval(() => {
+        if (modalUploadProgress.value < (completedFiles / totalFiles) * 100 + 80) {
+          modalUploadProgress.value += Math.random() * 10
+        }
+      }, 100)
+      
+      try {
+        const formData = new FormData()
+        formData.append('files', file)
+        formData.append('folder', delimiter.value)
+        
+        await requestUploadImages(formData)
+        
+        completedFiles++
+        modalUploadProgress.value = (completedFiles / totalFiles) * 100
+        
+        clearInterval(progressInterval)
+        
+        // 短暂延迟让用户看到进度
+        await new Promise(resolve => setTimeout(resolve, 200))
+        
+      } catch (error) {
+        clearInterval(progressInterval)
+        throw error
+      }
+    }
     
-    ElMessage.success(`🎉 成功上传 ${uploadedItems.length} 个文件到 ${delimiter.value === '/' ? '根目录' : delimiter.value.replace('/', '')}`)
+    modalUploadProgress.value = 100
+    modalCurrentFile.value = '上传完成'
+    
+    ElMessage.success(`🎉 成功上传 ${totalFiles} 个文件到 ${delimiter.value === '/' ? '根目录' : delimiter.value.replace('/', '')}`)
+    
+    // 短暂延迟显示完成状态
+    await new Promise(resolve => setTimeout(resolve, 500))
     
     // 关闭弹窗并刷新文件列表
     closeUploadDialog()
     listImages()
+    
   } catch (error) {
     console.error('Upload failed:', error)
     ElMessage.error(`上传失败: ${error}`)
   } finally {
     modalUploading.value = false
+    modalUploadProgress.value = 0
+    modalCurrentFile.value = ''
+  }
+}
+
+const handleUploadAction = () => {
+  if (uploadMode.value === 'direct') {
+    uploadFiles()
+  } else {
+    // 添加到队列
+    addFilesToTaskQueue(selectedFiles.value, delimiter.value)
+    ElMessage.success(`📝 已添加 ${selectedFiles.value.length} 个文件到上传队列`)
+    closeUploadDialog()
   }
 }
 
@@ -1083,4 +1171,35 @@ const uploadFiles = async () => {
 const showMobileMenu = () => {
   showMobileMenuFlag.value = true
 }
+
+// 任务队列相关方法
+const addFilesToTaskQueue = (files: File[], targetFolder: string) => {
+  const newTasks: UploadTask[] = files.map(file => ({
+    id: `task-${taskIdCounter.value++}`,
+    file: file,
+    targetFolder: targetFolder,
+    status: 'pending'
+  }))
+  
+  uploadTasks.value = [...uploadTasks.value, ...newTasks]
+}
+
+const updateUploadTasks = (tasks: UploadTask[]) => {
+  uploadTasks.value = tasks
+}
+
+const onUploadComplete = () => {
+  // 上传完成后刷新文件列表
+  listImages()
+}
 </script>
+
+<style scoped>
+.cyber-progress-bar {
+  @apply w-full bg-cyber-bg-dark border border-cyber-border rounded-full h-2 overflow-hidden;
+}
+
+.cyber-progress-fill {
+  @apply h-full bg-gradient-to-r from-cyber-primary to-cyber-accent transition-all duration-300;
+}
+</style>
